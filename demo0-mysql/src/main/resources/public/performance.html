@@ -1,0 +1,97 @@
+<!doctype html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/echarts/3.5.4/echarts.min.js"></script>
+    <title>无标题文档</title>
+</head>
+<style>
+.container{
+    margin: 0 auto;
+    width: 750px;
+}
+</style>
+<body>
+
+<div class="container">
+<div id="main" style="width:100%; height: 800px;"></div>
+<div>demo0的性能测试图</div>
+</div>
+<script>
+    var myChart = echarts.init(document.getElementById('main'));
+
+    option = {
+        title: {
+            text: '性能测试图'
+        },
+        color: ['#6ECF51', '#E46163'],
+        tooltip: {
+            trigger: 'axis',
+            axisPointer: {
+                type: 'shadow',
+            }
+        },
+        toolbox: {
+            feature: {
+                dataView: {show: true, readOnly: false},
+                magicType: {show: true, type: ['line', 'bar']},
+                restore: {show: true},
+                saveAsImage: {show: true}
+            }
+        },
+        legend: {
+            data: ['SELECT', 'UPDATE']
+        },
+        xAxis: [
+            {
+                type: 'category',
+                data: ['本地原生', 'Servlet+Native', 'SpringMVC+Native', "SpringMVC+JPA"],
+                axisPointer: {
+                    type: 'shadow'
+                }
+            }
+        ],
+        yAxis: [
+            {
+                type: 'value',
+                name: '次 / S',
+                min: 0,
+                max: 8000,
+                //interval: 1000,
+                axisLabel: {
+                    formatter: '{value}'
+                }
+            }
+        ],
+        series: [
+            {
+                name: 'SELECT',
+                type: 'bar',
+                barWidth: '25%',
+                label: {
+                    normal: {
+                        show: true,
+                        //position: 'center'
+                    }
+                },
+                data: [30000, 3300, 2900, 1900]
+            },
+            {
+                name: 'UPDATE',
+                type: 'bar',
+                barWidth: '25%',
+                label: {
+                    normal: {
+                        show: true,
+                        //position: 'top'
+                    }
+                },
+                data: [7800, 2700, 2200, 1800]
+            }
+        ]
+    };
+
+    myChart.setOption(option);
+</script>
+</body>
+</html>

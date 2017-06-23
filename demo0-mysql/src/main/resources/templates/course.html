@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<title>开始选课</title>
+<script type="text/javascript" src="javascript/main.js"></script>
+<link rel="stylesheet" th:href="@{css/main.css}" />
+
+<style type="text/css">
+td {
+	text-align: center;
+}
+</style>
+
+</head>
+
+<body>
+	<div class="top">选课系统Beta</div>
+	<div class="container">
+		<div class="login" align="center" style="max-width: 500px;">
+			<div>
+				<h1>选课</h1><br>
+				<div style="margin-top:20px; width:100%">
+					<table width="100%">
+						<thead>
+							<tr>
+								<th>&nbsp;&nbsp;&nbsp;&nbsp;</th>
+								<th>课程名称</th>
+								<th>容量</th>
+								<th>余量</th>
+								<th>教师姓名</th>
+								<th>课号</th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr th:each="course : ${courseList}">
+								<td><input type="radio" name="courseGroup" th:attr="value=${course.code}"></td>
+								<td th:text="${course.name}">欧美片的欣赏技巧</td>
+								<td th:text="${course.totalNum}">150</td>
+								<td th:attr="id=${course.code}" th:text="${course.surplusNum}">1</td>
+								<td th:text="${course.teacher}">阿狗</td>
+								<td th:text="${course.code}">课程代号</td>
+							</tr>
+						</tbody>
+					</table>
+
+					<div>
+						<input style="width:50%;" class="submit" type="button" value="提交" onclick="validateRadio()">
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<footer style="text-align:center; font-weight:bold">
+		<p>Copyright © 2016 广东科学技术职业学院 All rights reserved.</p>
+	</footer>
+</body>
+</html>

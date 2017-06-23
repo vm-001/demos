@@ -1,0 +1,63 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<title>广科选课小分队</title>
+<link href="css/main.css" rel="stylesheet" type="text/css">
+<style>
+ul {
+    margin:0;
+}
+.tips {
+    width: 80%;
+    margin: auto;
+    padding: 5px 10px;
+    max-width: 200px;
+    background: #fff;
+    border-radius: 10px;
+    border: 1px #dadada solid;
+}
+</style>
+</head>
+
+<body>
+<div class="top">选课系统Beta</div>
+<div align="center">(主服务器)</div>
+<div class="container">
+
+<div class="login" align="center">
+<div style="padding:0 50px;">
+  <h1>登录</h1>
+  <div style="margin-top:20px;" >
+	<input type="text" name="sid" id="sid" placeholder="学号" maxlength="11">
+	<input type="password" name="password" id="password" maxlength="20" placeholder="密码">
+	<div id="msg" style=""></div>
+	<div><input class="submit" value="登陆" type="button" onClick="check()"></div>
+  </div>
+  <a href="forget.html">忘记密码</a>
+</div>
+</div>
+</div>
+
+<div class="tips">
+<div>测试账号：</div>
+<ul>
+  <li>用户名：0104150000</li> 
+  <li>密码：123456</li>
+  <li>姓名：柴总</li>
+  <li>身份证：445221</li>
+</ul>
+<div><a href="performance.html">性能测试图</a></div>
+</div>
+<!--  极验的div -->
+<div id="mask"></div>
+<div id="popup-captcha-mobile"></div>
+
+<footer style="text-align:center; font-weight:600; ">
+  <p>Copyright © 2016 广东科学技术职业学院 All rights reserved.</p>
+</footer>
+<script type="text/javascript" src="javascript/main.js"></script>
+
+</body>
+</html>
