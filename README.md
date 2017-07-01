@@ -35,11 +35,10 @@ Alipay + Lucene + Redis
 
 项目地址：http://demo.leeys.top/demo5/
 
-注册 + 登录 + 购买
-![](http://static.leeys.top/demo5_2.gif)
+在线演示：
 
-后台管理界面
-![](http://static.leeys.top/demo5_3.gif)
+注册 + 登录 + 购买：http://static.leeys.top/demo5_2.gif
 
-Lucene全文搜索
-![](http://static.leeys.top/demo5_4.gif)
+后台管理界面：http://static.leeys.top/demo5_3.gif)
+
+Lucene全文搜索：http://static.leeys.top/demo5_4.gif)
