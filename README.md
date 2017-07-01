@@ -26,3 +26,20 @@
 > Websocket + Vue + Canvas + Spring Boot + 新浪OAuth2
 
 项目地址：http://demo.leeys.top/demo2/
+
+# demo5 天天书屋——购物商城
+
+
+Alipay + Lucene + Redis
+后台管理页面：Vue2 + Vue-router + Element-ui
+
+项目地址：http://demo.leeys.top/demo5/
+
+注册 + 登录 + 购买
+![](http://static.leeys.top/demo5_2.gif)
+
+后台管理界面
+![](http://static.leeys.top/demo5_3.gif)
+
+Lucene全文搜索
+![](http://static.leeys.top/demo5_4.gif)
