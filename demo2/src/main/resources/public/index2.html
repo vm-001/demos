@@ -1,0 +1,643 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<link rel="shortcut icon" href="favicon.ico">
+<title>滑稽大作战</title>
+<!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.1.3/vue.min.js"></script> -->
+<script src="js/vue.js"></script>
+<script src="js/vue-resource.js"></script>
+
+<!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/vue-resource/1.3.1/vue-resource.min.js"></script> -->
+
+<link rel="stylesheet" href="css/style2.css">
+
+<style>
+.random {
+    position: absolute;
+    /*z-index: -1;*/
+}
+/* this tip for rookie */
+.rookie-tips {
+    position: absolute;
+    width: 300px;
+    height: 25px;
+    line-height: 25px;
+    top: 130px;
+    left: 50%;
+    margin-left: 40px;
+    background-color: #FFF;
+    box-shadow: 0 2px 4px rgba(0,0,0,.12),0 0 6px rgba(0,0,0,.04);
+}
+</style>
+</head>
+
+<body>
+<div id="app" class="app-wrap">
+    <!-- img -->
+    <img v-cloak class="random"  src="images/speed.png" alt="">
+    <img v-cloak class="random"  src="images/gift.png" alt="">
+    <img v-cloak class="random"  src="images/tu.png" alt="">
+    <img v-cloak class="random"  src="images/rainbow.png" alt="">
+    <img v-cloak class="random"  src="images/slow.png" alt="">
+    <img v-cloak class="random"  src="images/yinxian.png" alt="">
+
+    <div id="music_btn" class="btn touch" :class="{active : music.play}" @click="toggleMusic">滑稽音乐</div>
+    <notification :notification-list="notificationList"></notification>
+    <div class="label left touch" style="top:25%;"  @click="">首页</div>
+    <div class="label left touch" style="top:43%;"  @click="toggleComments">留言</div>
+    <div class="label left touch" style="top:61%;"  @click="toggleAbout">关于</div>
+    <div class="label right touch" style="top:25%;"  @click="toggleUserInfo">我的</div>
+    <div class="label right touch" style="top:43%; color:#773F9C"  @click="toggleOnlineUser">在线</div>
+    <div class="label right touch" style="top:61%;"  @click="toggleRanking">排名</div>
+    
+    <!-- 游戏数据 -->
+    <div  v-cloak class="game-data-wrap text-center" :class="{close: !menu.showGameData}">
+        <div style="top: 25%;">分数<div>{{gameData.score}}</div></div>
+        <div style="top: 43%;">关卡<div>{{gameData.level}}</div></div>
+        <div style="top: 61%;">速度<div>{{gameData.speed}}</div></div>
+    </div>
+
+    <!-- 蒙层 -->
+    <section>
+        <transition name="fade">
+            <div v-cloak v-if="showMask" class="mask" @click="closeAll"></div>
+        </transition>
+        <div class="info"></div>
+    </section>
+
+    <!-- 游戏说明 -->
+    <div class="text-center" style="margin-top: 0px;">
+        <div style="z-index:1"><img src="images/font2.png" alt=""></div>
+        <div class="rookie-tips">←开始滑稽(发生未知的bug请刷新页面)</div>
+        <img class="touch" style="height: 64px;" @click="toggleCanvas" id="start_huaji" :src="!user.validated ? 'images/huaji2-gray.png' : 'images/huaji2-left.png'" alt="">
+    </div>
+    <div class="main">
+        <div class="instruction">   
+            <h3 class="text-center">游戏规则</h3>
+            <ul>
+              <li>游戏开始后按AD控制滑稽勇士。当球还没启动时，可以按W发射出小滑稽(如果你是受邀方，则W键的控制权交给主邀方)</li>
+              <p><br></p>
+              <li>当你完成第10关后会进入深渊模式，敬请期待。</li>
+            </ul>
+            <h4>掉落物品</h4>
+            <div class="drop-gift"><img src="images/t_gift30.png" alt=""><p>礼物：得到上天的眷顾，分数+5</p></div>
+            <div class="drop-gift"><img src="images/t_tu30.png" alt=""><p>腹泻：吃坏东西导致腹泻，分数-5</p></div>
+            <div class="drop-gift"><img src="images/t_pen30.png" alt=""><p>喷水：借助水娃反向喷水使整个人加速，持续5秒</p></div>
+            <div class="drop-gift"><img src="images/t_slow30.png" alt=""><p>咖啡：喝了一杯咖啡整个人悠闲下来，持续5秒</p></div>
+            <div class="drop-gift"><img src="images/t_yinxian30.png" alt=""><p>阴险魔王：滑稽勇士的克星，鲜有遇见他后还能活下来的滑稽，相传阴险魔王也是彩虹珍宝的原料之一</p></div>
+            <div class="drop-gift"><img src="images/t_rainbow30.png" alt=""><p>彩虹珍宝：令无数滑稽勇士梦寐以求的珍宝，滑稽村里的老滑稽有的说能够带来财富，有的说令身体强壮，还有其他云云，但滑稽村至今都没有滑稽得到过这件彩虹珍宝</p></div>
+        </div>
+    </div>
+
+    <!-- 留言板 -->
+     <transition name="fade"><comments v-if="menu.showComments" :user="user"></comments></transition>
+
+    <!-- 排行榜 -->
+    <transition name="fade"><ranking v-if="menu.showRanking" ></ranking></transition>
+    
+    <!-- 用户信息 -->
+    <transition name="fade"><userinfo v-if="menu.showUserInfo" :user="user"></userinfo></transition>
+   
+    <!-- 在线玩家 -->
+    <transition name="fade"><onlineuser v-if="menu.showOnlineUser" :user="user"></onlineuser></transition>
+
+    <!-- 关于 -->
+    <transition name="fade">
+    <div v-cloak  class="about" v-if="menu.showAbout">
+        <h2 class="text-center">开发故事</h2>
+        <p>呀，开发者又偷懒了</p>
+    </div>
+    </transition>
+    
+</div>
+<div id="game" class="game-wrap text-center">
+    <canvas id="canvas" width="1050" height="620"></canvas>
+</div>
+</body>
+
+<script src="js/game2.js"></script>
+<script>
+
+var contextPath = '/demo2';
+var baseUrl = 'http://' + window.location.host + contextPath;
+
+Vue.component('notification', {
+    template:
+    `
+    <div id="notification" class="notifi-wrap">
+        <div v-for="notifi in notificationList" class="notificaiton">
+            <div class="group">
+                <h2 class="title info">提示</h2>
+                <div class="content">{{notifi.t == 0 ? notifi.n + " 邀请你一同游戏?" : ""}}</div>
+                <div class="btn text-center touch" @click="confirm(notifi)">确定</div>
+                <div class="close touch" @click="remove(notifi)">关闭</div>
+            </div>
+        </div>
+    </div>
+    `,
+    props: ['notificationList'],
+    mounted: function () {
+    
+    },
+    data: function () {
+        return {
+
+        }
+    },
+    methods: {
+        confirm: function(notifi) {
+            var uuid = notifi.f;            
+            this.$http.post(
+                baseUrl + "/confirm/" + uuid,
+                {}, 
+                {emulateJSON: true, headers: {token : app.user.token}})
+            .then(function(res) {
+                if (res.data.code === 0) {
+                    game.double = true;
+                    app.toggleCanvas();
+                    this.remove(notifi); // delete this node
+                } else if (res.data.code === -28){
+                    alert("对方正在游戏！");
+                    console.log(res)   
+                }
+            }, function(res) {
+                console.log(res);
+            }); 
+        },
+        remove: function(notifi) {
+            var idx = this.notificationList.indexOf(notifi);
+            console.log(idx);
+            this.notificationList.splice(idx, 1);
+        }
+    }
+})
+
+/* 留言组件 */
+Vue.component("comments", {
+    template: 
+    `
+   <div class="comments-wrap">
+        <div class="input-wrap">
+            <textarea class="input-text" v-model="inputMsg" id="commentInput" placeholder="吐槽？赞扬？"></textarea>
+            <div class="text-center" style="position: absolute; width: 100%;"><small class="warning">{{warnMsg}}</small></div>
+            <span class="size-limit">
+                <span :class="{warning: inputMsg.length > 150}">{{inputMsg.length}}</span>/150
+            </span>
+        </div>
+        <div class="btn-submit text-center" @click="checkInput">发送</div>
+        <ul class="comments">
+            <li v-for="comment in commentList">
+                <div class="comment-user"><b>{{comment.user.username}}</b></div>
+                <div class="comment-date"><small>{{comment.createdTime}}</small></div>
+                <div class="comment-content"><p>{{comment.content}}</p></div>
+            </li>
+        </ul>
+        <div class="page text-center">
+            <!-- 考虑做成滚动加载？ -->
+            <div class="touch" @click="getComment(1)">首页</div>
+            <div class="touch" @click="getComment(nowPage - 1)">上一页</div>
+            <div id="pages">
+                <div  v-for="page in totalPages" class="page-tag" :class="{active: page === nowPage}" @click="getComment(page)">{{page}}</div>
+            </div>
+            <div class="touch" @click="getComment(nowPage + 1)">下一页</div>
+            <div class="touch" @click="getComment(totalPages)">尾页</div>
+        </div>
+    </div>
+    `,
+    props: ['user'],  // 父组件传递过来 需要保存吗？
+    // 使用mounted需要配合 v-if
+    mounted: function() {
+        this.getComment();
+    },
+    data: function() {
+        return {
+            inputMsg: '',
+            warnMsg: '',
+            commentList: [],
+            totalPages: 0,
+            nowPage: 1
+        }
+    },
+    methods: {
+        checkInput: function() {
+            if (!this.inputMsg) {
+                this.warnMsg = "说句滑稽的话吧。";
+            } else if (this.inputMsg.length > 150) {
+                this.warnMsg = "字数超过150";
+            }  else {
+                this.createComment(this.inputMsg); 
+            }
+        },
+        getComment: function(page) {
+            page = page ? page : 1;  // 保证page大于等于1
+            this.$http.get(baseUrl + "/comment?page=" + page).then(function(res) {
+                console.log(res.data);
+                this.commentList = res.data.content.commentList;
+                this.totalPages = res.data.content.totalPages;
+                this.nowPage = page;
+            }, function(res) {
+                this.warnMsg = "滑稽服务器开小差了。";
+            });
+        },
+        createComment: function(inputMsg) {
+            console.log(inputMsg);
+            this.$http.post(
+                baseUrl + "/comment", 
+                {content: inputMsg}, 
+                {emulateJSON: true, headers: {token : this.user.token}}
+            ).then(function(res) {
+                var code = res.data.code;
+                if (code === 0) {
+                    this.warnMsg = "";
+                    this.inputMsg = "";  
+                    this.getComment();  
+                } else if (code === -19 || code === -5) {
+                    this.warnMsg = "滑稽勇士，您还没有登录，请点击首页的滑稽头像登录吧"
+                } else {
+                    this.warnMsg = "滑稽服务器开小差了。";
+                }
+            }, function(res) {
+                this.warnMsg = "滑稽服务器开小差了。";
+            });
+        }
+    }
+});
+
+/* 排行榜组件 */
+Vue.component("ranking", {
+    template: 
+    `
+    <div id="ranking" class="ranking" >
+        <div class="header">排行榜</div>
+        <div id="ranking" class="body text-center">
+            <div v-for="ranking in rankingList" class="ranking-user">
+                <img  class="ranking-img" :src="ranking.user.avatarUrl" alt="">
+                <div class="info">
+                    <span class="touch" @click="toWeibo(ranking.user.uid)" @mouseenter="togglePop($event,true, ranking)" @mouseleave="togglePop($event,false, ranking)">{{ranking.user.username}}</span>
+                </div>
+            </div>
+        </div>
+        <transition name="fade">
+            <div :style="pop.styleObj" v-show="pop.show" class="userinfo-pop">
+                <img class="avatar" :src="pop.ranking.user.avatarUrl" alt="用户头像">
+                <div class="info text-center" style="padding-top: 40px;">
+                    <div>总成绩：{{pop.ranking.totalScore}}</div>
+                    <!-- <div>局数：120</div> -->
+                    <small>这里就随意了</small>
+                </div>
+            </div>
+        </transition>
+    </div>
+    `,
+    mounted: function() {
+        this.getRanking();
+    },
+    data: function() {
+        return {
+            pop: {
+                show: false,
+                styleObj: {
+                    left: '10px',
+                    top: '0px',
+                },
+                ranking: {
+                    user: {
+                        uuid:"",
+                        username:"",
+                        uid:"",
+                        avatarUrl:"",
+                        description: ""
+                    },
+                    totalScore:0
+                }
+            },
+            rankingList: []
+        }
+    },
+    methods: {
+        enter: function(e) {
+            console.log(e);
+        },
+        togglePop: function(e, type, ranking) {
+            if (type) {
+                this.pop.show = true;
+                this.pop.styleObj.left = e.pageX + 5 + "px";
+                this.pop.styleObj.top = e.pageY - 250 + "px";
+                this.pop.ranking = ranking;
+            } else {
+                this.pop.show = false;
+            }
+            console.log(e)
+        },
+        getRanking: function(type) {
+            this.$http.get(baseUrl + "/ranking").then(function(res) {
+                console.log(res.data);
+                this.rankingList = res.data.content;
+            }, function(res) {
+                console.log(res);
+            });
+        },
+        toWeibo: function(uid) {
+            window.open('http://weibo.com/u/' + uid);
+        }
+    }
+});
+
+
+/* 用户信息组件 */
+Vue.component("userinfo", {
+    template: 
+    `
+    <div v-cloak class="userinfo-wrap">
+
+        <div><img :src="userinfo.user.avatarUrl" class="avatar" /></div>
+        <div class="username"><b>{{userinfo.user.username}}</b></div>
+        <div class="desc">{{userinfo.user.description}}</div>
+        <div class="game-info">
+            <div>
+                <div class="num"><h4>{{userinfo.totalScore}}</h4></div>
+                <div>总成绩</div>
+            </div>
+            <div>
+                <div class="num"><h1>{{userinfo.rank}}</h1></div>
+                <div>排名</div>
+            </div>
+            <div>
+                <div class="num"><h4>{{userinfo.playNum}}</h4></div>
+                <div>局数</div>
+            </div>
+        </div>
+        <!--
+        <div class="game-info">
+            <div>
+                Left
+            </div>
+            <div>
+                <div class="btn-paly"></div>
+                <div>PLAY</div>
+            </div>
+            <div>
+                Rigth
+            </div>
+        </div>
+        -->
+    </div>
+    `,
+    props: ['user'],
+    created: function() {
+        this.getUserInfo(this.user.uuid);
+    },
+    data: function() {
+        return {
+            userinfo: {
+                user: {
+                    uuid: '',
+                    username: '',
+                    uid: '',
+                    avatarUrl: '',
+                    description: ''
+                },
+                playNum: 0,
+                totalScore: 0,
+                rank: 0
+            },
+        }
+    },
+    methods: {
+        getUserInfo: function(uuid) {
+            if (!uuid) return;
+            this.$http.get(baseUrl + "/user/" + uuid).then(function(res) {
+                console.log(res.data);
+                if (res.data.code === 0)
+                    this.userinfo = res.data.content;
+            }, function(res) {
+                console.log(res);
+            });
+        }
+    }
+});
+
+/* 在线玩家组件 */
+Vue.component("onlineuser", {
+    template: 
+    `
+    <div id="online_player" class="online-wrap">
+        <div class="header text-center">当前在线玩家</div>
+        <div class="body">
+            <div v-for="player in playerList" class="online-user">
+                <img class="avatar touch" :src="player.user.avatarUrl" alt="用户头像" @click="toWeibo(player)">
+                <div class="info">
+                    <!-- 
+                    <dl>
+                        <dt>{{player.username}}</dt>
+                        <dd><small>{{player.userdesc}}</small></dd>
+                    </dl>
+                    -->
+                    <!-- 
+                    <div class="username">阿狗</div>
+                    <div class="userdesc"><small>人的躯壳，狗的灵魂</small><div>
+                    -->
+                    <div class="username">{{player.user.username}}</div>
+                </div>
+                <div class="btn invite touch" :class="{untouch: player.user.uuid == user.uuid}" @click="invite(player)">邀请</div>
+            </div>
+        </div>
+    </div>
+    `,
+    props: ['user'],
+    mounted: function() {
+        this.getOnlineUser();
+
+    },
+    data: function() {
+        return {
+            playerList: []
+        }
+    },
+    methods: {
+        invite: function(player) {
+            // 判断用户是否已经登录 通过 user.uuid ==
+            if (player.user.uuid === this.user.uuid) {  // if self
+                return;
+            }
+            this.$http.post(
+                baseUrl + "/invite/" + player.user.uuid, 
+                {}, 
+                {emulateJSON: true, headers: {token : this.user.token}}
+            ).then(function(res) {
+                if (res.data.code === 0) {
+                    console.log("邀请已经发送")
+                } else if (res.data.code === -29){
+                    alert("该用户已经离线!");
+                } else {
+                    console.log("发送邀请失败!")
+                    console.log(res);
+                }
+            }, function(res) {
+                console.log(res);
+            });
+        },
+        getOnlineUser: function() {
+            this.$http.get(baseUrl + "/online").then(function(res) {
+                this.playerList = res.data.content;
+            }, function(res) {
+                console.log(res);
+            });
+        },
+        toWeibo: function(player) {
+            window.open('http://weibo.com/u/' + player.user.uid);
+        }
+    }
+});
+
+var app = new Vue({
+    el: '#app',
+    data: {
+        music: {
+            play: false,
+            audio: null,
+        },
+        user: {
+            uuid: '',
+            token: '',
+            validated: false,
+        },
+        menu: {
+            showOnlineUser: false,
+            showAbout: false,
+            showComments: false,
+            showRanking: false,
+            showUserInfo: false,
+            showCanvas: false,
+            showGameData: false
+        },
+        showMask: false,
+        STORAGE_KEY: 'demo2_key',
+        gameData: {
+            score: 0,
+            level: 1,
+            speed: 10,
+        },
+        notificationList: []
+    },
+    watch: {
+        user: {
+            handler: function(user) {
+                // 登录过后打开socket
+                if (socketObj.socket === null)
+                    socketObj.openSocket(user.token);
+            },
+            deep: true
+        }
+    },
+    mounted: function() {
+        var obj = this.fetch();
+        if (Object.keys(obj).length == 2) {
+            this.user.uuid = obj.uuid;
+            this.user.token = obj.token;
+        }
+        this.music.audio = new Audio("http://static.leeys.top/demo2/2.mp3");    
+        this.music.audio.loop = true;
+        this.initRandomImg();
+    },
+    methods: {
+        randomColor: function() {
+            var v = 'rgb(i,i,i)';
+            for (var i = 0; i < 3; i++) {
+                v = v.replace('i', parseInt(Math.random() * 100) + 150);  /* 150-250 */
+            }
+            return  v;
+        },
+        initRandomImg: function () {
+            var divs = Array.from(document.querySelectorAll(".random"));
+            divs.forEach(function(div) {
+                div.style.left = (~~ (Math.random() * 80)) + 10 + "%";
+                div.style.top = (~~ (Math.random() * 80)) + 10 + "%";
+            })
+        },
+        toggleMusic: function() {
+            if (this.music.play === false) {
+                this.music.audio.play();
+                this.music.play = true;
+            } else {
+                this.music.audio.pause();
+                this.music.play = false;
+            }
+        },
+        toggleOnlineUser: function() {
+            this.showMask = true;
+            this.menu.showOnlineUser = !this.menu.showOnlineUser;
+        },
+        toggleComments: function() {
+            this.showMask = true;
+            this.menu.showComments = !this.menu.showComments;
+        },
+        toggleRanking: function() {
+            this.showMask = true;
+            this.menu.showRanking = !this.menu.showRanking;
+        },
+        toggleUserInfo: function() {
+            this.showMask = true;
+            this.menu.showUserInfo = !this.menu.showUserInfo;
+        },
+        toggleCanvas: function() {
+            if (!this.user.validated) {
+                if (confirm("尊敬的滑稽勇士，只有新浪令牌才能开启滑稽大作战\n你是否愿意前往获取?")) {
+                    window.location = 'https://api.weibo.com/oauth2/authorize?response_type=code&client_id=292269826&redirect_uri=http%3A%2F%2Fdemo.leeys.top%2Fdemo2%2Foauth%2Fweibo%2Fcallback';
+                } else {
+                    ;
+                }
+                return;
+            }
+            this.showMask = true;
+            document.querySelector(".game-wrap").style.visibility = 'visible';
+            this.menu.showCanvas = !this.menu.showCanvas;
+            this.menu.showGameData = !this.menu.showGameData;
+            game.gameStart(true);
+        },
+        toggleAbout: function() {
+            this.showMask = true;
+            this.menu.showAbout = !this.menu.showAbout;
+        },
+        closeAll: function() {
+            for (var key in this.menu) {
+                this.menu[key] = false;
+            }
+            this.showMask = false;
+            this.menu.showGameData = false;
+            document.querySelector(".game-wrap").style.visibility = 'hidden';
+            game.start = false;
+        },
+        fetch:  function() {
+            return JSON.parse(window.localStorage.getItem(this.STORAGE_KEY) || '{}');
+        },
+        save: function(items) {
+            window.localStorage.setItem(this.STORAGE_KEY, JSON.stringify(items));
+        },
+        // http
+        addRecord: function(double) {
+            debug("提交分数: " + this.gameData.score + " double : " + double)
+            this.$http.post(
+                baseUrl + "/record", 
+                {score: this.gameData.score, type: double ? 2 : 1},
+                {emulateJSON: true, headers: {token : this.user.token}}
+            ).then(function(res) {
+                console.log(res);
+                console.log(res.data.code);
+            }, function(res) {  
+                console.log(res);
+            });
+        }
+    }
+}) 
+
+// /* 页面自动刷新 */
+// window.addEventListener("focus",function() {
+//     location.reload(true);
+// })
+
+</script>
+
+</html>
