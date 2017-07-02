@@ -1,5 +1,3 @@
-[![](https://img.shields.io/github/issues/Dog-Lee/demos.svg)](https://github.com/Dog-Lee/demos/issues)  [![](https://img.shields.io/github/forks/Dog-Lee/demos.svg)](https://github.com/Dog-Lee/demos/network) [![](https://img.shields.io/github/stars/Dog-Lee/demos.svg)](https://github.com/Dog-Lee/demos/stargazers)
-
 ## 写在前面的话
 
 此仓库用来记录阿狗的独立项目，所有项目均可在线访问。
@@ -7,6 +5,8 @@
 起初以demo命名只是为了缓解命名的痛苦，事实上我并不喜欢demo式的东西，相反，完整，健全才是我常常追求的东西。如果这里每一个完整的demo都或多或少能帮到你，那它除了给我某些实际的便利以外，还多出来了你赋予给它的意义。
 
 出于安全顾虑，我会清除某些配置(像数据库密码这类重要信息)，Spring Boot项目一般会在AppConfig.java中。
+
+----
 
 ## demo0 选课小系统
 
@@ -31,6 +31,8 @@
 
 性能测试图： http://demo.leeys.top/demo0/performance.html
 
+----
+
 ## demo1 在线游戏——石头剪刀布
 
 原理是把用户的猜拳记录存放在循环队列中每10ms检测队列数量是否为偶数，是则出队两次交换猜拳记录，否则休眠当前线程直到下一玩家接入，即使前一玩家离线服务器也会保存他的猜拳记录。代码比较简陋就不提交仓库了。
@@ -38,6 +40,8 @@
 项目地址：http://demo.leeys.top/demo1/
 
 ## demo2 双人实时游戏——滑稽大作战
+
+----
 
 原名弹球游戏，是在大二上学期与同学在课内作业的基础上改版而成的。在下学期重写，添加了贴吧滑稽元素，并改名为滑稽大作战。
 
@@ -51,6 +55,7 @@
 
 博客地址：
 
+----
 
 ## demo5 天天书屋——购物商城
 
@@ -78,6 +83,15 @@ Lucene：都知道中文的全文索引十分麻烦，MySQL5.7自带的中文全
 1. [注册+登录+购买](http://static.leeys.top/demo5_2.gif)
 2. [后台管理](http://static.leeys.top/demo5_3.gif)
 3. [Lucene全文搜索](http://static.leeys.top/demo5_4.gif)
+
+----
+
+## What's Next ?
+
+<br>
+<br>
+
+----
 
 ## 写在后面的话
 
