@@ -1,4 +1,6 @@
-## 说在前面的话
+[![](https://img.shields.io/github/issues/Dog-Lee/demos.svg)](https://github.com/Dog-Lee/demos/issues)  [![](https://img.shields.io/github/forks/Dog-Lee/demos.svg)](https://github.com/Dog-Lee/demos/network) [![](https://img.shields.io/github/stars/Dog-Lee/demos.svg)](https://github.com/Dog-Lee/demos/stargazers)
+
+## 写在前面的话
 
 此仓库用来记录阿狗的独立项目，所有项目均可在线访问。
 
@@ -7,23 +9,27 @@
 出于安全顾虑，我会清除某些配置(像数据库密码这类重要信息)，Spring Boot项目一般会在AppConfig.java中。
 
 ## demo0 选课小系统
+
 大一暑假使用JavaWeb开发的选课小系统，实现了登录、找回密码与选课功能。
 
-Myisam引擎下使用腾讯云最低端服务器实现单秒2000+UPDATE或2000+SELECT。
+在Myisam引擎下使用腾讯云最低端服务器实现单秒2000+UPDATE或2000+SELECT，勉强超过教务系统。
 
-后用框架进行重构与优化，在支持事务的Innodb引擎下实现2000+TPS。重构期间测试了Servlet、Spring MVC与JDBC、ORM混搭的性能并得出一份简单的性能数据。
+大二使用框架进行重构与优化，在支持事务的Innodb引擎下实现2000+TPS。重构期间测试了Servlet、Spring MVC与JDBC、ORM混搭的性能并得出一份简单的性能数据。
 
 技术栈：
 - Spring Boot
 - Thymeleaf
 - JPA
 
-项目地址：http://demo.leeys.top/demo0/ （内存不足已经取消--2017-07-01）
+预览：
+
+![](http://static.leeys.top/demo0/preview/demo0.gif?v=new)
+
+项目地址：http://demo.leeys.top/demo0/ （内存不足已经取消 -- 2017-07-01）
 
 博客地址：[demo0小结](http://leeys.top/2017/04/28/demo0%E5%B0%8F%E7%BB%93/)
 
 性能测试图： http://demo.leeys.top/demo0/performance.html
-
 
 ## demo1 在线游戏——石头剪刀布
 
@@ -60,8 +66,6 @@ Lucene：都知道中文的全文索引十分麻烦，MySQL5.7自带的中文全
 
 支付宝：使用了支付宝的提供的沙箱环境，能够对进行支付。
 
-
-
 技术栈：
 
 - 后端：Alipay + Lucene + Redis
@@ -74,3 +78,7 @@ Lucene：都知道中文的全文索引十分麻烦，MySQL5.7自带的中文全
 1. [注册+登录+购买](http://static.leeys.top/demo5_2.gif)
 2. [后台管理](http://static.leeys.top/demo5_3.gif)
 3. [Lucene全文搜索](http://static.leeys.top/demo5_4.gif)
+
+## 写在后面的话
+
+如果你看到的是一条狗趴在墙上的页面，那么请打开手机按照它说的做，我会非常感谢你。
