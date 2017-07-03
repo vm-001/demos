@@ -41,7 +41,7 @@ public interface BookRepository extends JpaRepository<Book, Integer>, JpaSpecifi
     @Query(value = "select * from tb_book where price between ?1 and ?2 limit ?3, ?4", nativeQuery = true)
     List<Book> findByPrice(float lowPrice, float hightPrice, int offset, int limit);
     
-    @Query(value = "select sum(num) sales, book.* from tb_order_item, tb_book book where book.id = book_id group by book_id order by sales asc limit ?1", nativeQuery = true)
+    @Query(value = "select sum(num) sales, book.* from tb_order_item, tb_book book where book.id = book_id group by book_id order by sales desc limit ?1", nativeQuery = true)
     List<Book> getHotBook(int limit);
     
     @Modifying
