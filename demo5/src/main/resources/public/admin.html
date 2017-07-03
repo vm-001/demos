@@ -1,0 +1,762 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>后台管理系统</title>
+
+<link rel="shortcut icon" href="favicon_admin.ico">
+<link rel="stylesheet" href="https://cdn.bootcss.com/element-ui/1.3.6/theme-default/index.css">
+<link rel="stylesheet" href="css/main.css">
+<!-- <script src="https://cdn.bootcss.com/jquery/1.11.1/jquery.min.js"></script> -->
+<style>
+body {
+    position: relative;
+}
+.el-menu {
+    border-radius: 0;
+}
+.page-menu {
+    position: fixed;
+    height: 100%;
+    background-color: #324157;
+}
+.page-body {
+    padding: 50px 0 0 250px;
+    width: 100%;
+    height: 100%;
+    box-sizing: border-box;
+}
+
+.demo-table-expand {
+    font-size: 0;
+}
+.demo-table-expand label {
+    width: 90px;
+    color: #99a9bf;
+}
+.demo-table-expand .el-form-item {
+    margin-right: 0;
+    margin-bottom: 0;
+    width: 50%;
+}
+
+/*添加图书*/
+.book-form {
+    margin: 0 auto;
+    width: 800px;
+    /*height: 500px;*/
+    border: 1px solid #eaeefb;
+    padding: 10px 30px 10px 10px;
+    border-top-right-radius: 6px;
+    border-top-left-radius: 6px;
+}
+.book-form header {
+    margin-bottom: 30px;
+    font-size: 1.5em;
+}
+
+.el-table .paid-row {
+    background-color: #13CE66;
+    /*background: #e2f0e4;*/
+}
+.el-table .wait-row {
+    /*background: #c9e5f5;*/
+}
+.el-table .overtime-row {
+    background: #FF4949;
+}
+
+.pagination {
+    float: right;
+    margin-top: 20px;
+}
+</style>
+</head>
+<body>
+<div id="app">
+    <div class="page">
+        <div class="page-menu" style="width: 200px">
+            <el-menu default-active="1" theme="dark" class="el-menu-vertical-demo" router>
+                <el-menu-item index="1"><i class="el-icon-menu"></i>首页</el-menu-item>
+                <el-submenu index="2">
+                    <template slot="title"><i class="el-icon-document"></i>数据管理</template>
+                    <el-menu-item index="userList">用户列表</el-menu-item>
+                    <el-menu-item index="bookList">图书列表</el-menu-item>
+                    <el-menu-item index="orderList">订单列表</el-menu-item>
+                </el-submenu>
+                <el-submenu index="3">
+                    <template slot="title"><i class="el-icon-plus"></i>添加数据</template>
+                    <el-menu-item index="addBook">添加图书</el-menu-item>
+                </el-submenu>
+            </el-menu>
+        </div>
+
+        <div class="page-body">
+            <router-view></router-view>
+        </div>
+    </div>
+
+    <el-dialog title="登录" :visible.sync="signinDialogVisible" size="tiny">
+        <el-form ref="signinForm" :model="signinForm" label-width="100px" style="width: 70%">
+            <el-form-item label="用户名">
+                <el-input v-model="signinForm.username"></el-input>
+            </el-form-item>
+            <el-form-item label="密码">
+                <el-input type="password" v-model="signinForm.password" style=""></el-input>
+            </el-form-item>
+        </el-form>
+        <span slot="footer" class="dialog-footer">
+            <el-button @click="signinDialogVisible = false">取 消</el-button>
+            <el-button type="primary" @click="signin">确 定</el-button>
+        </span>
+    </el-dialog>
+</div>
+</body>
+
+<!-- <script src="https://unpkg.com/element-ui/lib/index.js"></script> -->
+<script src="js/vue.js"></script>
+<script src="js/vue-router.js"></script>
+<script src="js/vue-resource.js"></script>
+<script src="js/ele.js"></script>
+<script>
+var baseUrl = window.location.origin + '/demo5';
+
+var UserList = {
+    template: `
+    <div>
+        <el-table :data="userList" height="800" border style="width: 100%"  highlight-current-row>
+            <el-table-column prop="uuid" label="用户 ID" width="300"></el-table-column>
+            <el-table-column prop="createdTime" label="注册时间" width="180"></el-table-column>
+            <el-table-column prop="" label="邮箱" width="180">
+                <template scope="scope">
+                    不公开隐私数据
+                </template>
+            </el-table-column>
+            <el-table-column prop="balance" label="余额" width="180"></el-table-column>
+            <el-table-column prop="ip" label="IP" width=""></el-table-column>
+            <el-table-column prop="lastSignin" label="最近登录" width=""></el-table-column>
+            <el-table-column prop="name" label="姓名" width=""></el-table-column>
+            <!-- <el-table-column prop="address" label="地址"></el-table-column> -->
+            <!--
+            <el-table-column label="操作">
+                <template scope="scope">
+                    <el-button size="small" @click="handleEdit(scope.$index, scope.row)">编辑</el-button>
+                    <el-button size="small" type="danger" @click="handleDelete(scope.$index, scope.row)">删除</el-button>
+                </template>
+            </el-table-column>
+            -->
+        </el-table>
+        <!--
+        <el-dialog title="修改用户信息" :visible.sync="userDialogVisible">
+            <el-form ref="userForm" :model="userForm" label-width="100px" style="width: 100%;">
+            <el-form-item label="ISBN 号">
+                <el-input v-model="userForm.isbn"></el-input>
+            </el-form-item>
+            <el-form-item label="书名">
+                <el-input v-model="userForm.name" style=""></el-input>
+            </el-form-item>
+            <el-form-item label="作者">
+                <el-input v-model="userForm.author" style=""></el-input>
+            </el-form-item>
+            <el-form-item label="出版社">
+                <el-input v-model="userForm.publisher" style=""></el-input>
+            </el-form-item>
+            <el-form-item label="出版日期">
+                <el-form-item>
+                    <el-date-picker v-model="userForm.publishDate" placeholder="请选择出版日期" style=""></el-date-picker>
+                </el-form-item>
+            </el-form-item>
+            <el-form-item label="图书原价">
+                <el-input-number v-model="userForm.price" :min="0" :max="1000"></el-input-number>
+            </el-form-item>
+            <el-form-item label="折扣">
+                <el-input-number :disabled="userForm.price == 0" v-model="userForm.discount" :min="0" :max="10"></el-input-number>
+                <span>折后金额 <font style="color:red">{{userForm.price * userForm.discount / 10}}</font></span>
+            </el-form-item>
+            <el-form-item label="库存">
+                <el-input-number v-model="userForm.inventory" :min="0" :max="9999"></el-input-number>
+            </el-form-item>
+            </el-form>
+            <span slot="footer" class="dialog-footer">
+                <el-button @click="userDialogVisible = false">取 消</el-button>
+                <el-button type="primary" @click="updateBook">确 定</el-button>
+            </span>
+        </el-dialog>
+
+        -->
+        <el-pagination class="pagination"
+          @current-change="handleCurrentChange"
+          :current-page="currentPage"
+          :page-size="pageSize"
+          layout="total, prev, pager, next, jumper"
+          :total="totalSize">
+        </el-pagination>
+    </div>  
+    `,
+    data: function() {
+        return {
+            userDialogVisible: false,
+            totalSize: 0,
+            pageSize: 18,
+            currentPage: 1,
+            userForm: {},
+            userList: [],
+        }
+    },
+    mounted: function() {
+        this.getUserList();
+    },
+    methods: {
+        getUserList: function() {
+            var offset = this.pageSize * (this.currentPage - 1);
+            this.$http.get('api/user?offset=' + offset + '&limit=' + this.pageSize).then(function(res) {
+                console.log(res);
+                this.userList = res.data.content.userList;
+                this.totalSize = res.data.content.total;
+            }, function(res) {
+                alert('服务器开小差');
+                console.log(res)
+            })
+        },
+        handleEdit: function(idx, row) {
+            console.log(idx, row);
+            this.bookForm = row;
+            this.userDialogVisible = true;
+        },
+        handleCurrentChange: function(page) {
+            console.log(page);
+        }
+    }
+
+}
+
+/*订单列表*/
+var OrderList = {
+    template: `
+    <div>
+        <el-input placeholder="请输入查找内容" v-model="keyword" style="width: 500px; margin-bottom: 20px;">
+            <el-select v-model="searchType" slot="prepend" placeholder="搜索类型" style="width: 120px;">
+                <el-option label="订单 ID" value="1"></el-option>
+                <el-option label="用户名" value="2"></el-option>
+                <el-option label="价格" value="3"></el-option>
+            </el-select>
+            <el-button slot="append" icon="search" @click="search"></el-button>
+        </el-input>
+        <el-table :data="orderList" style="width: 100%; height:700px;" border>
+            <el-table-column type="expand">
+                <template scope="props">
+                    <el-form label-position="left" class="demo-table-expand" label-width="60px">
+                        <div v-for="item in props.row.itemList">
+                            <el-col :span="4">
+                                <el-form-item label="图书 ID">
+                                    <span>{{ item.book.id }}</span>
+                                </el-form-item>
+                            </el-col>
+                            <el-col :span="8">
+                                <el-form-item label="书名">
+                                    <span>{{ item.book.name }}</span>
+                                </el-form-item>
+                            </el-col>
+                            <el-col :span="6">
+                                <el-form-item label="数量">
+                                    <span>{{ item.num}}</span>
+                                </el-form-item>
+                            </el-col>
+                            <el-col :span="6">
+                                <el-form-item label="单价">
+                                    <span>{{ item.book.price}}</span>
+                                </el-form-item>
+                            </el-col>                            
+                        </div>
+                    </el-form>
+                    <div>地址：{{props.row.address}}</div>
+                </template>
+            </el-table-column>
+            <el-table-column label="订单 ID" prop="uuid" width="300"></el-table-column>
+            <el-table-column label="创建时间" prop="createdTime" width="170"></el-table-column>
+            <el-table-column label="用户" prop=""></el-table-column>
+            <el-table-column label="签收人" prop="consignee" width="120"></el-table-column>
+            <!-- <el-table-column label="订单总金额" prop="originPrice" width="120"></el-table-column>-->
+            <el-table-column label="折后金额" prop="price" width="100" >
+                <template scope="scope">{{getPrice(scope.row.price)}}</template>
+            </el-table-column>
+            <el-table-column label="订单状态" prop="status"width="100">
+                <template scope="scope">
+                    <el-tag :type="getTagType(scope.row.status)">{{getOrderStatus(scope.row.status)}}</el-tag>
+                </template>
+            </el-table-column>
+            <el-table-column label="描述" prop="description"></el-table-column>
+            <el-table-column label="操作">
+                <template scope="scope">
+                    <el-button size="small" @click="handleEdit(scope.$index, scope.row)">编辑</el-button>
+                    <el-button size="small" type="danger" @click="handleDelete(scope.$index, scope.row)">删除</el-button>
+                </template>
+            </el-table-column>
+        </el-table>
+        <el-dialog title="修改用户信息" :visible.sync="orderDialogVisible">
+            <el-form ref="orderForm" :model="orderForm" label-width="100px" style="width: 100%;">
+            <el-form-item label="订单 ID">
+                <el-input v-model="orderForm.uuid" disabled></el-input>
+            </el-form-item>
+            <el-form-item label="创建时间">
+                <el-input v-model="orderForm.createdTime" style="" disabled></el-input>
+            </el-form-item>
+            <el-form-item label="用户">
+                <el-input v-model="orderForm.author" style=""></el-input>
+            </el-form-item>
+            <el-form-item label="订单实际金额">
+                <el-input-number v-model="orderForm.price" :min="0" :max="100000"></el-input-number>
+            </el-form-item>
+            <el-form-item label="支付状态" >
+                <el-radio-group v-model="orderForm.status" disabled>
+                    <el-radio :label="0">等待支付</el-radio>
+                    <el-radio :label="1">支付成功</el-radio>
+                    <el-radio :label="2">支付超时</el-radio>
+                </el-radio-group>
+            </el-form-item>
+            <!--
+            <el-form-item label="发货状态">
+                <el-radio-group v-model="orderForm.status">
+                    <el-radio :label="0">未发货</el-radio>
+                    <el-radio :label="1">已发货</el-radio>
+                    <el-radio :label="2">已收货</el-radio>
+                </el-radio-group>
+            </el-form-item>
+            -->
+            
+            </el-form>
+            <span slot="footer" class="dialog-footer">
+                <el-button @click="orderDialogVisible = false">取 消</el-button>
+                <el-button type="primary" @click="updateOrder">确 定</el-button>
+            </span>
+        </el-dialog>
+        <el-pagination
+        class="pagination"
+        @current-change="handleCurrentChange"
+        :current-page="currentPage"
+        :page-size="pageSize"
+        layout="total, prev, pager, next, jumper"
+        :total="totalSize">
+        </el-pagination>
+    </div>
+    `,
+    data: function() {
+        return {
+            searchType: '',
+            keyword: '',
+            orderDialogVisible: false,
+            orderForm: {},
+            totalSize: 0,
+            pageSize: 18,
+            currentPage: 1,
+            orderList: []
+        }
+    },
+    mounted: function() {
+        this.getOrderList();
+    },
+    methods: {
+        getOrderStatus: function(type) {
+            switch (type) {
+                case 0: return '等待支付';
+                case 1: return '已支付';
+                case 2: return '支付超时';
+            }
+        },
+        getTagType: function(type) {
+            switch (type) {
+                case 0: return 'gray';
+                case 1: return 'success';
+                case 2: return 'danger';
+            }
+        },
+        handleCurrentChange: function(page) {
+            console.log(page)
+        },
+        getPrice: function(price) {
+            return (+price).toFixed(2);
+        },
+        handleEdit: function(idx, row) {
+            console.log(idx, row);
+            this.orderForm = row;
+            this.orderDialogVisible = true;
+        },
+        handleDelete: function(idx, row) {
+            console.log(idx, row);
+            this.$message.info("阿狗还没做呀");
+        },
+        getOrderList: function() {
+            var offset = (this.currentPage - 1) * this.pageSize;
+            this.$http.get("api/order?offset=" + offset + "&limit=" + this.pageSize).then(function(res) {
+                console.log(res);
+                this.totalSize = res.data.content.total;
+                this.orderList = res.data.content.orderList;
+            }, function(res) {
+                 this.$message.error('难道服务器有挂了？');
+            });
+        },
+        updateOrder: function() {
+            // this.$http.put("admin/book", this.bookForm).then(function(res) {
+            //     this.bookDialogVisible = false;
+            //     this.getBookList();
+            // }, function(res) {
+            //     this.$message.error('服务器开小差，修改失败');
+            // })
+            this.$message.info("阿狗还没做呀");
+        },
+        search: function() {
+            this.$message.info('阿狗还没做呀');
+        },
+    }
+}
+
+var AddBook = {
+    template: `
+    <div class="book-form">
+        <header class="text-center">新增图书</header>
+        <el-form ref="bookForm" :rules="rules" :model="bookForm" label-width="100px" style="width: 70%;">
+        <el-form-item label="ISBN 号" prop="isbn">
+            <el-input v-model="bookForm.isbn" style="width: 75%"></el-input>
+            <el-button type="primary" style="float:right" @click="fillData">填充数据</el-button>
+        </el-form-item>
+        <el-form-item label="书名" prop="bookName">
+            <el-input v-model="bookForm.bookName" style=""></el-input>
+        </el-form-item>
+        <el-form-item label="作者" prop="author">
+            <el-input v-model="bookForm.author" style=""></el-input>
+        </el-form-item>
+        <el-form-item label="出版社" prop="publisher">
+            <el-input v-model="bookForm.publisher" style=""></el-input>
+        </el-form-item>
+        <el-form-item label="出版日期">
+            <el-form-item prop="publishDate">
+                <el-date-picker v-model="bookForm.publishDate" placeholder="请选择出版日期" style=""></el-date-picker>
+            </el-form-item>
+        </el-form-item>
+        <el-form-item label="图书原价" prop="price">
+            <el-input-number v-model="bookForm.price" :min="0" :max="1000"></el-input-number>
+        </el-form-item>
+        <el-form-item label="折扣" prop="discount">
+            <el-input-number :disabled="bookForm.price == 0" v-model="bookForm.discount" :min="0" :max="10"></el-input-number>
+            <span>折后金额 <font style="color:red">{{bookForm.price * bookForm.discount / 10}}</font></span>
+        </el-form-item>
+        <el-form-item label="库存" prop="inventory">
+            <el-input-number v-model="bookForm.inventory" :min="0" :max="9999"></el-input-number>
+        </el-form-item>
+        <el-form-item>
+            <el-button type="primary" @click="onSubmit('bookForm')">立即创建</el-button>
+            <el-button @click="resetForm('bookForm')">重置</el-button>
+        </el-form-item>
+
+    </el-form>
+    </div>
+    `,
+    data: function() {
+        return {
+            bookAPI: 'https://api.douban.com/v2/book/isbn/',
+            bookForm: {
+                isbn: '',
+                bookName: '',
+                author: '',
+                publisher: '',
+                publishDate: '',
+                imgUrl: '',
+                price: 0,
+                discount: 10,
+                inventory: 9999,
+            },
+            rules: {
+                isbn: [
+                    { required: true, message: '请输入 ISBN 号', trigger: 'blur' },
+                ]
+            }
+        }
+    },
+    methods: {
+        validateForm: function(formName) {
+            var result = false;
+            this.$refs[formName].validate(function(valid) {
+                if (valid) {
+                    result = true;
+                }
+            });
+            return result;
+        },
+        onSubmit: function(formName) {
+            var self = this;
+            this.$refs[formName].validate(function(valid) {
+                if (valid) {
+                    self.createBook();    
+                } else {
+                    return false;
+                }
+            });
+        },
+        resetForm: function(formName) {
+            this.$refs[formName].resetFields();
+        },
+        fillData: function() {
+            if (!this.validateForm('bookForm')) {
+                return;
+            }
+            this.$http.jsonp(this.bookAPI + this.bookForm.isbn)
+            .then(function(res) {
+                console.log(res.body)
+                var obj = res.body;
+                this.bookForm.bookName = obj.title;
+                this.bookForm.price = obj.price.replace("元", "");
+                this.bookForm.publisher = obj.publisher;
+                this.bookForm.publishDate = obj.pubdate;
+                this.bookForm.author = obj.author.toString();
+                this.bookForm.imgUrl = obj.images.medium;
+            }).catch(function(e) {
+                this.$message.error('未找到任何信息！');
+                console.log(e)
+            })
+        },
+        createBook: function() {
+            var form = this.bookForm;
+            this.$http.post(
+                'api/book',
+                {
+                    marcNo: form.marcNo,
+                    isbn: form.isbn,
+                    name: form.bookName,
+                    imgUrl: form.imgUrl,
+                    summary: form.summary,
+                    author: form.author,
+                    price: form.price,
+                    discount: form.discount,
+                    publisher: form.publisher,
+                    inventory: form.inventory,
+                    publishDate: form.publishDate,
+                },
+                {headers: {token : token}}
+            ).then(function(res) {
+                if (res.data.code === 0) {
+                    this.resetForm('bookForm');
+                } else {
+                    this.$message.error(res.data.message);
+                }
+            }, function(res) {
+                this.$message.error('服务器开小差，保存失败');
+            });
+        }
+    }
+}
+
+
+/*图书列表*/
+var BookList = {
+    template: `
+    <div>
+        <el-table :data="bookList" height="800" border style="width: 100%"  highlight-current-row>
+            <el-table-column prop="id" label="图书 ID" width="100"></el-table-column>
+            <el-table-column prop="isbn" label="ISBN" width="180"></el-table-column>
+            <el-table-column prop="name" label="书名" width="350"></el-table-column>
+            <el-table-column prop="author" label="作者" width="200"></el-table-column>
+            <el-table-column prop="price" label="价格" width="150"></el-table-column>
+            <el-table-column prop="discount" label="折扣" width="100"></el-table-column>
+            <el-table-column prop="inventory" label="库存" width="150"></el-table-column>
+            <el-table-column prop="sales" label="销量" width="150"></el-table-column>
+            <el-table-column label="操作">
+                <template scope="scope">
+                    <el-button size="small" @click="handleEdit(scope.$index, scope.row)">编辑</el-button>
+                    <el-button size="small" type="danger" @click="handleDelete(scope.$index, scope.row)">删除</el-button>
+                </template>
+            </el-table-column>
+        </el-table>
+
+        <el-dialog title="修改图书信息" :visible.sync="bookDialogVisible">
+            <el-form ref="bookForm" :model="bookForm" label-width="100px" style="width: 100%;">
+            <el-form-item label="ISBN 号">
+                <el-input v-model="bookForm.isbn"></el-input>
+            </el-form-item>
+            <el-form-item label="书名">
+                <el-input v-model="bookForm.name" style=""></el-input>
+            </el-form-item>
+            <el-form-item label="作者">
+                <el-input v-model="bookForm.author" style=""></el-input>
+            </el-form-item>
+            <el-form-item label="出版社">
+                <el-input v-model="bookForm.publisher" style=""></el-input>
+            </el-form-item>
+            <el-form-item label="出版日期">
+                <el-form-item>
+                    <el-date-picker v-model="bookForm.publishDate" placeholder="请选择出版日期" style=""></el-date-picker>
+                </el-form-item>
+            </el-form-item>
+            <el-form-item label="图书原价">
+                <el-input-number v-model="bookForm.price" :min="0" :max="1000"></el-input-number>
+            </el-form-item>
+            <el-form-item label="折扣">
+                <el-input-number :disabled="bookForm.price == 0" v-model="bookForm.discount" :min="0" :max="10"></el-input-number>
+                <span>折后金额 <font style="color:red">{{bookForm.price * bookForm.discount / 10}}</font></span>
+            </el-form-item>
+            <el-form-item label="库存">
+                <el-input-number v-model="bookForm.inventory" :min="0" :max="9999"></el-input-number>
+            </el-form-item>
+            </el-form>
+            <span slot="footer" class="dialog-footer">
+                <el-button @click="bookDialogVisible = false">取 消</el-button>
+                <el-button type="primary" @click="updateBook">确 定</el-button>
+            </span>
+        </el-dialog>
+        <el-pagination
+          class="pagination"
+          @current-change="handleCurrentChange"
+          :current-page="currentPage"
+          :page-size="pageSize"
+          layout="total, prev, pager, next, jumper"
+          :total="totalSize">
+        </el-pagination>
+    </div> 
+    `,
+    data: function() {
+        return {
+            signinForm: {},
+            signinDialogVisible: true,
+            currentPage: 1,
+            totalSize: 0,
+            pageSize: 18,
+            bookDialogVisible: false,
+            bookForm: {},
+            bookList: []
+        }
+    },
+    mounted: function() {
+        this.getBookList();
+    },
+    methods: {
+        handleEdit: function(idx, row) {
+            console.log(idx, row);
+            this.bookForm = row;
+            this.bookDialogVisible = true;
+        },
+        handleDelete: function(idx, row) {
+            var self = this;
+            this.$msgbox({
+                title: '提示',
+                message: '确定删除?',
+                showCancelButton: true,
+                cancelButtonText: '取消',
+                confirmButtonText: '确定',
+                beforeClose: function(action, instance, done) {
+                    if (action === 'confirm') {
+                        self.deleteBook(row);
+                        done();
+                    } else {
+                        done();
+                    }
+                }
+            })
+            console.log(idx, row);
+        },
+        handleCurrentChange: function(page) {
+            this.currentPage = page;
+            this.getBookList();
+        },
+        getBookList: function() {
+            var offset = (this.currentPage - 1) * this.pageSize;
+            this.$http.get("api/book?offset=" + offset + "&limit=" + this.pageSize).then(function(res) {
+                console.log(res);
+                this.totalSize = res.data.content.total;
+                this.bookList = res.data.content.bookList;
+            }, function(res) {
+                console.log("错误")
+                console.log(res)
+            });
+        },
+        deleteBook: function(row) {
+            this.$http.delete("api/book/" + row.id, {headers: {token : token}})
+            .then(function(res) {
+                console.log(res);
+                if (res.data.code !== 0) {
+                    this.$message.error(res.data.message);
+                } else {
+                    this.getBookList(); // 刷新数据
+                }
+            }, function(res) {
+                console.log(res);
+            })
+        },
+        updateBook: function() {
+            this.$http.put("api/book", this.bookForm, {headers: {token : token}}).then(function(res) {
+                if (res.data.code !== 0) {
+                    this.$message.error(res.data.message);
+                } else {
+                    this.bookDialogVisible = false;
+                    this.getBookList();
+                }
+            }, function(res) {
+                this.$message.error('服务器开小差，修改失败');
+            })
+        }
+    }
+}
+var routes = [
+    { path: '/userList', component: UserList },
+    { path: '/bookList', component: BookList },
+    { path: '/orderList', component: OrderList },
+    { path: '/addBook', component: AddBook },
+]
+
+var router = new VueRouter({
+  routes: routes
+})
+
+
+// 简单使用一个变量来保存超级管理员的token；
+var token = '';
+
+
+var app = new Vue({
+    router: router,  //路由
+    el: '#app',
+    data: {
+        STORAGE_KEY: 'ADMIN_TOKEN',
+        token: '',
+        signinDialogVisible: false,
+        signinForm: {
+            username: '',
+            password: '',
+        }
+    },
+    mounted: function() {
+        token = this.fetch() || '';
+        if (!token) {
+            this.signinDialogVisible = true;
+        } 
+    },
+    methods: {
+        fetch: function() {
+            return window.localStorage.getItem(this.STORAGE_KEY);
+        },
+        save: function(value) {
+            window.localStorage.setItem(this.STORAGE_KEY, value);
+        },
+        signin: function() {
+            this.$http.post(
+                'api/user/signin/admin',
+                { 
+                    username: this.signinForm.username,
+                    password: this.signinForm.password,
+                },
+                {emulateJSON: true}
+            ).then(function(res) {
+                console.log(res)
+                if (res.data.code === 0) {
+                    this.save(res.data.content.token);
+                    token = this.fetch();
+                    this.signinDialogVisible = false;
+                } else {
+                    this.$message.error(res.data.message);
+                }
+            }, function(res) {
+                console.log(res);
+            });
+        },
+    }
+}).$mount('#app');
+</script>
+</html>

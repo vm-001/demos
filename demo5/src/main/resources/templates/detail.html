@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="UTF-8">
+<title>天天书屋</title>
+<link rel="shortcut icon" href="../favicon.ico">
+<script src="../js/vue.js"></script>
+<script src="../js/vue-resource.js"></script>
+<link rel="stylesheet" href="../css/main.css">
+
+<style>
+body {
+    width: 100%;
+    overflow-x: hidden;
+}
+.book-intro {
+    margin-top: 15px;
+    padding: 30px 25px;
+    width: 800px;
+    border-left: 1px solid #EEE;
+    border-right: 1px solid #EEE;
+    border: 1px solid #EEE;
+}
+
+.book-intro .item-wrap {
+    height: 400px;
+}
+.book-intro .image-wrap {
+    float: left;
+    width: 300px;
+    height: 400px;
+    /*border: 1px solid #EEE;*/
+}
+.image-preview {
+    overflow: hidden;
+    height: 80%;
+}
+.image-preview img {
+    height: 100%;
+}
+
+.img-thumb {
+    padding: 15px;
+}
+.img-thumb li{
+    overflow: hidden;
+    height: 50px;
+    width: 50px;
+    display: inline-block;
+    border: 1px solid #EEE;
+}
+.img-thumb li img {
+    height: 100%;
+    /*width: 100%;*/
+}
+
+.book-intro .item-info {
+    font-size: 14px;
+    float: right;
+    width: 450px;
+    height: 100%;
+}
+.item-info > div {
+    margin-bottom: 10px;
+}
+@media screen and (max-width: 1000px) {
+    .book-intro {
+        width: 90%;
+    }
+    .book-intro .item-wrap {
+        width: 100%;
+        text-align: center;
+    }
+    .book-intro .item-info {
+        display: none;  /*做移动端适配真心麻烦呀*/
+    }
+}
+.item-info .book-name {
+    font-size: 20px;
+}
+
+.summary-wrap {
+    margin-top: 20px;
+    width: 100%;
+}
+
+.summary-wrap .summary {
+    line-height: 1.7;
+    font-size: 15px;
+    text-align: justify;
+    padding: 15px;
+}
+
+
+
+
+</style>
+</head>
+<body>
+<div id="app">
+    <div class="book-intro center">
+        <div class="item-wrap clearfix">
+            <div class="image-wrap">
+                <div class="image-preview text-center"><img id="image" src="images/s27596001.jpg" alt=""></div>
+                <ul class="img-thumb" style="display:none">
+                    <li><img src="images/s27596001.jpg" alt=""></li>
+                    <li><img src="images/s27596001.jpg" alt=""></li>
+                    <li><img src="images/s27596001.jpg" alt=""></li>
+                </ul>
+            </div>
+            <div class="item-info">
+                <div class="book-name" th:text="${book.name}">你看起来很美味</div>
+                <div class="book-author"><span th:text="${book.author}"></span> 著</div>
+                <div>出版社：<span th:text="${book.publisher}">华侨出版社</span></div>
+                <div>出版日期：<span th:text="${book.publishDate}">2016-09</span></div>
+                <!-- <div th:text="${book.publishDate}">2016-09</div> -->
+                <div>ISBN：<span th:text="${book.isbn}" id="isbn">7-80679-112-4</span></div>
+                <div>
+                    <span style="color:#e4393c;font-size:22px;font-weight:600">￥<span th:text="${book.price * book.discount / 10}">69</span></span>
+                    <span style="padding-left: 10px;color: #666;font-size: 14px;">[<span th:text="${book.discount}">10</span> 折]</span>
+                    <span style="padding-left: 10px;color: #666;font-size: 14px;">[定价： <span style="text-decoration: line-through;" th:text="${book.price}">69</span>]</span>
+                </div>
+                <div class="touch" style="margin-top: 20px;"><a th:href="|/demo5/addcart?id=${book.id}&num=1|">加入购物车</a></div>
+            </div>
+        </div>
+        <div class="summary-wrap">
+            <div style="height: 30px;">
+                <div class="text-center" style="border: 1px solid #EEE; border-bottom: none;height: 30px; line-height: 30px; width: 60px;">简介</div>
+                <hr style="margin-left: 61px;">
+            </div>
+            <div class="summary" id="summary"></div>
+        </div>
+    </div>
+</div>
+</body>
+<script>
+function $(id) {
+    return document.querySelector(id);
+}
+(function() {
+    var isbn = $('#isbn').innerHTML;
+    Vue.http.jsonp('https://api.douban.com/v2/book/isbn/' + isbn).then(function(res) {
+//         console.log(res)
+        $('#summary').innerHTML = res.data.summary;
+        $('#image').src = res.data.images.large;
+    }, function(res) {
+
+    })
+})();
+</script>
+</html>

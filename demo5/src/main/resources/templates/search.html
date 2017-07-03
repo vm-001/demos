@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>搜索图书</title>
+<link rel="shortcut icon" href="favicon.ico">
+<link rel="stylesheet" href="css/main.css">
+<script src="js/vue.js"></script>
+<script src="js/vue-resource.js"></script>
+<style>
+body {
+    padding-top: 50px;
+}
+.result-list {
+    font-size: 14px;
+    padding: 10px 0 30px 30px;
+    width: 1150px;
+    box-sizing: border-box;
+    background-color: #fff;
+    border: 1px solid #EEE;
+}
+.result-item {
+    margin: 0 20px 10px 0;
+    position: relative;
+    display: inline-block;
+    width: 200px;
+    height: 260px;
+    border-radius: 5px;
+    border: 1px solid #EEE;
+    transition: all .3s;
+}
+.result-item:hover {
+    box-shadow: 0 2px 4px rgba(0,0,0,.12),0 0 6px rgba(0,0,0,.04);
+}
+.result-item .images {
+    text-align: center;
+    width: 100%;
+    height: 150px;
+}
+.result-item .images img {
+    height: 100%;
+}
+.result-item .info {
+    padding: 10px;
+}
+.result-item .info div {
+    margin: 2px 0;
+}
+.p-name, .p-author {
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+}
+.p-price {
+    color: #e4393c; 
+    /*font-family: Verdana;*/
+    font-size: 16px;
+    font-weight: 600;
+}
+.p-oprice {
+    padding-left: 10px;
+    color: #666;
+    font-size: 14px;
+}
+.addcart {
+    position: absolute;
+    bottom: 5px;
+    right: 5px;
+}
+
+a:hover { color: #333 }
+
+.search-type {
+    /*margin-top: 20px;*/
+    margin: 20px 0 10px;
+}
+.search-type>a {
+    padding: 3px 3px;
+    cursor: pointer;
+    color: #777;
+    display: inline-block;
+}
+.search-type>a.active {
+    color: #333;
+    border-bottom: 1px solid #666;
+}
+
+.fade-enter-active, .fade-leave-active {
+  transition: opacity 1s
+}
+.fade-enter, .fade-leave-active {
+  opacity: 0;
+}
+
+</style>
+</head>
+<body>
+<div id="app">
+    <div v-cloak class="result-list center">
+        <div class="search-wrap center clearfix">
+            <div class="search-bar">
+                <input v-model="keyword" @keyup.enter="search(0)" class="search-input" type="text" placeholder="搜索">
+                <div @click="search(0)" class="icon-search"></div>
+            </div>
+        </div>
+        <div class="search-type">
+            <a href="javascript:;" :class="{active : sortType == 6}" @click="search(6)">销量</a>
+            <a href="javascript:;" :class="{active : sortType == 2}" @click="search(2)">价格</a>
+            <a href="javascript:;" :class="{active : sortType == 4}" @click="search(4)">出版时间</a>
+        </div>
+        <div v-if="resultList.length === 0" class="text-center" style="margin-top: 30px;">
+            <div><img src="images/404.png" alt=""></div>
+            <div>什么都没有找到</div>
+        </div>
+        <transition-group name="fade" tag="ul">
+            <li v-for="result in resultList" :key="result" class="result-item">
+                <div @click="toDetail(result.id)" class="images touch"><img :src="result.imgUrl" alt="暂无图片"></div>
+                <div class="info">
+                    <div><span  class="p-price">￥{{Math.round(result.price*result.discount/10*100)/100}}</span><span class="p-oprice">[ <span style="text-decoration: line-through">{{result.price}}</span> ]</span></div>
+                    <div class="p-name" :title="result.name"><a :href="'book/' + result.id" target="_blank">{{result.name}}</a></div>
+                    <div class="p-author">{{result.author}}</div>
+                </div>
+                <a target="_blank" :href="'addcart?id=' + result.id + '&num=1'" class="addcart touch"><div class="icon-addcart"></div></a>
+            </li>
+        </transition-group>
+    </div>
+
+</div>
+</body>
+<script>
+var app = new Vue({
+    el: '#app',
+    data: {
+        pageSize: 20,
+        currentPage: 1,
+        searchType: 'all',
+        sortType: 0,
+        keyword: '',
+        resultList: [],
+    },
+    watch : {
+        // sortType: {
+        //     handler: function() {
+        //         this.search();
+        //     }
+        // }
+    },
+    mounted: function() {
+        /*监听滑动到底部事件*/
+        var self = this;
+        window.addEventListener('scroll', function(e) {
+            var screenHeight = window.innerHeight;
+            var scrollHeight = document.body.scrollTop;
+            var sum = screenHeight + scrollHeight;
+            if (sum === document.body.offsetHeight) {
+                self.loadMore();
+            }
+    }, false)
+    },
+    methods: {
+        search: function(type) {
+            this.sortType = type;
+            this.currentPage = 1;
+            var offset = (this.currentPage - 1) * this.pageSize;
+            this.$http.get('api/book/search/'+ this.searchType +'?keyword=' + this.keyword + '&offset=' + offset + '&limit=' + this.pageSize + '&sort=' + this.sortType)
+            .then(function(res) {
+                console.log(res);
+                this.resultList = res.data.content;
+            }, function(res) {
+
+            })
+        },
+        toDetail: function(id) {
+            window.open(window.location.origin + '/demo5/book/' + id);
+
+        },
+        loadMore: function() {
+            this.currentPage++;
+            var offset = (this.currentPage - 1) * this.pageSize;
+            this.$http.get('api/book/search/'+ this.searchType +'?keyword=' + this.keyword + '&offset=' + offset + '&limit=' + this.pageSize + '&sort=' + this.sortType)
+            .then(function(res) {
+                console.log(res);
+                if (res.data.content.length === 0) {
+                    this.currentPage--;
+                }
+                // this.resultList = this.resultList.concat(res.data.content);
+                var self = this;
+                res.data.content.forEach(function(e) {
+                    self.resultList.push(e);
+                })
+            }, function(res) {
+
+            })
+        }
+    }
+});
+
+</script>
+</html>

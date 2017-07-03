@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>天天书屋</title>
+
+<link rel="shortcut icon" href="favicon.ico">
+<script src="js/vue.js"></script>
+<script src="js/vue-resource.js"></script>
+<script src="js/gt.js"></script>
+<script src="js/main.js"></script>
+<link rel="stylesheet" href="css/main.css">
+
+<style>
+
+</style>
+</head>
+<body>
+<div id="app">
+    <transition name="fade">
+    <div v-if="showCart" class="cart-wrap center clearfix" v-cloak>
+        <div>
+            <h2 class="text-center">购物车</h2>
+            <table class="cart">
+                <div class="text-center" v-if="cartList.length === 0"><big>空空如也</big></div>
+                <!-- <thead>
+                    <tr>
+                        <th width="12%">图片</th>
+                        <th width="30%">书名</th>
+                        <th>a</th>
+                        <th>a</th>
+                        <th>操作</th>
+                    </tr>
+                </thead> -->
+                <tbody>
+                    <tr v-for="item in cartList">
+                        <td class="text-center"><img :src="item.imgUrl" alt="暂无图片"></td>
+                        <td>{{item.name}}</td>
+                        <td>￥{{getPrice(item.price, item.discount)}}</td>
+                        <!-- <td><input v-model="item.num" type="number" min="0" max="999" @change="change(item)"></td> -->
+                        <td>
+                            <div class="choose-num clearfix">
+                                <div class="touch" @click="changeItemNum(item, -1)"><div class="icon-reduce"></div></div>
+                                <!-- <div class="text-center"><span style="font-size: 14px">{{item.num}}</span></div> -->
+                                <div class="text-center"><input  @blur="checkNum(item)" v-model="item.num" type="text" maxlength="3"></div>
+                                <div class="touch" @click="changeItemNum(item, +1)"><div class="icon-add"></div></div>
+                            </div>
+                        </td>
+                        <td><span class="delete" @click="deleteItem(item)">删除</span></td>
+                    </tr>  
+                </tbody>
+            </table>
+            <div class="clearfix count" style="margin-top: 50px;">
+                <div style="margin-right:20px">共 {{totalNum}} 件商品</div>
+                <div style="">总价 <span style="color: #e4393c;font-size: 20px;font-weight: 600;">￥{{totalPrice}}</span> 元</div>
+            </div>
+            <div class="clearfix count" style="margin-top: 10px;">
+                <div class="" style="margin-right: 10px;"><a href="/demo5">继续购物</a></div> 
+                <button class="submit" @click="toOrderInfo">立即结算</button>
+            </div>
+            <ul style="margin-top: 20px;">
+                <li class="delete-item" v-for="item in removeItem">{{item.name}} <span class="touch" style="float:right" @click="addItem(item)">重新购买</span></li>
+            </ul>
+        </div>
+    </div>
+    </transition>
+    <transition name="fade"><login v-on:login-success="loginSuccess" v-if="showLogin" v-cloak></login></transition>
+    <transition name="fade"><my-mask v-if="showMask" v-on:click="showLogin=false;showMask=false;"></my-mask></transition>
+    <transition name="fade">
+    <div v-if="showOrderInfo" class="orderinfo-wrap center clearfix" v-cloak>
+        <h2 class="text-center">订单信息</h2>
+        <div class="item">
+            <label for="consignee">收件人</label>
+            <input v-model="orderInfo.consignee" class="" type="text" id="consignee">
+        </div>
+        <div class="item">
+            <label for="">所在区域</label>
+            <select v-model="orderInfo.province" name="deliveryType" id="deliveryType" placeholder="请选择配送方式">
+                <!-- <option value="0">请选择</option> -->
+                <option value="广东省">广东省</option>
+                <option value="2"></option>
+            </select>
+            <select v-model="orderInfo.city" name="deliveryType" id="deliveryType" placeholder="请选择配送方式">
+                <!-- <option value="0">请选择</option> -->
+                <option value="珠海市">珠海市</option>
+                <option value=""></option>
+            </select>
+            <select v-model="orderInfo.county" name="deliveryType" id="deliveryType" placeholder="请选择配送方式">
+                <!-- <option value="0">请选择</option> -->
+                <option value="金湾区">金湾区</option>
+                <option value="2"></option>
+            </select>
+        </div>
+        <div class="item">
+            <label for="consignee">详细地址</label>
+            <input v-model="orderInfo.address" class="" type="text" id="consignee">
+        </div>
+        <div class="item">
+            <label for="consignee">手机号</label>
+            <input v-model="orderInfo.phone" class="" type="text" id="consignee" placeholder="随便乱填吧">
+        </div>
+        <div class="item">
+            <label for="">配送方式</label>
+            <select v-model="orderInfo.deliveryType" name="deliveryType" id="deliveryType" placeholder="请选择配送方式">
+                <option value="0">请选择</option>
+                <option value="普通配送">普通配送</option>
+                <option value="阿狗配送">阿狗配送</option>
+            </select>
+        </div>
+        <div class="operate-wrap">
+            <span class="touch" style="font-size: 14px; margin-right: 5px;" @click="toCart">返回购物车</span> 
+            <button class="submit" @click="addOrder">提交订单</button>
+        </div>
+    </div>  
+    </transition>
+
+    <transition name="fade">
+    <div v-if="showCashier" class="pay-wrap center" v-cloak>
+        <p>您的订单提交成功，请尽快支付</p>
+        <p>订单号：{{payResult.orderId}}</p>
+        <p>应付金额：{{payResult.price}}</p>
+        <p>送你一个一百万余额的支付宝账号：</p>
+        <p>账号：<b>psmmjg5694@sandbox.com</b> 支付密码：<b>111111</b></p>
+        <div class="text-center">
+            <a :href="'cashier/' + payResult.orderId" target="_blank"><button class="btn-pay"><img class="image-alipay" style="" src="images/alipay.png" alt=""></dic>立即支付</button></a>
+        </div>
+    </div>  
+    </transition>
+    
+</div>
+</body>
+
+
+<script>
+
+
+var cart = new Vue({
+    el: '#app',
+    data: {
+        showMask: false,
+        showCart: true,
+        showOrderInfo: false,
+        showCashier: false,
+        showPayResult: false,
+        showLogin: false,
+        totalNum: 0,
+        totalPrice: '0.00',
+        cartList: [
+        {
+            id: 11,
+            name: '你看起来很美味',
+            author: '',
+            imgUrl: 'images/s27596001.jpg',
+            price: 87.80,
+            discount: 9,
+            num: 1,  // 购买数量
+        },
+        {
+            id: 10,
+            name: '你看起来很美味',
+            author: '',
+            imgUrl: 'images/shu16.jpg',
+            price: 87.80,
+            discount: 8,
+            num: 10,  // 购买数量
+        }
+        ],
+        removeItem: [],
+        orderInfo: {
+            consignee: '',
+            province: '',
+            city: '',
+            county: '',
+            address: '',
+            phone: '',
+            deliveryType: '普通配送',
+        },
+        payResult: {
+            price: '0.00',
+            orderId: '',
+        }
+    },
+    mounted: function() {
+        this.$http.get('api/user/cart').then(function(res) {
+                this.cartList = res.data.content;
+                console.log(res)
+            }, function(res) {
+                console.log(res)
+            });
+    },
+    watch : {
+        cartList: {
+            handler: function() {
+                var num = 0;
+                var price = 0;
+                var self = this;
+                this.cartList.forEach(function(item) {
+                    num += item.num;
+                    price += self.getPrice(item.price, item.discount) * item.num;
+                });
+                this.totalNum = num;
+                this.totalPrice = price.toFixed(2);
+            },  
+            deep:true,
+        }
+    },
+    methods: {
+        getPrice: function(price, discount) {
+            var v = price * discount / 10;
+            return v.toFixed(2);
+        },
+        deleteItem: function(item) {
+            for (var i = 0; i < this.cartList.length; i++) {
+                if (this.cartList[i] === item) {
+                    this.cartList.splice(i, 1);
+                    this.removeItem.push(item);
+                }
+            }
+            this.$http.get('addcart?id='+ item.id +'&count=0').then(function(res) {
+                console.log(res)
+            }, function(res) {
+                console.log(res)
+            });
+        },
+        addItem: function(item) {
+            for (var i = 0; i < this.removeItem.length; i++) {
+                if (this.removeItem[i] === item) {
+                    this.removeItem.splice(i, 1);
+                    this.cartList.push(item);
+                }
+            }
+            // this.updateServerData();
+            this.$http.get('addcart?id='+ item.id +'&count=' + item.num).then(function(res) {
+                console.log(res)
+            }, function(res) {
+                console.log(res)
+            });
+        },
+        changeItemNum: function(item, delta) {
+            if (item.num + delta < 1) {
+                return;
+            }
+            item.num = item.num + delta;
+            this.$http.get('addcart?id='+ item.id +'&num=' + delta).then(function(res) {
+                console.log(res)
+            }, function(res) {
+                console.log(res)
+            });
+        },
+        addOrder: function() {
+            this.$http.post(
+                'api/order',
+                {
+                    consignee: this.orderInfo.consignee,
+                    phone: this.orderInfo.phone,
+                    deliveryType: this.orderInfo.deliveryType,
+                    address: this.orderInfo.province + '/' + this.orderInfo.city + '/' + this.orderInfo.county + '/' + this.orderInfo.address,
+                    consignee: this.orderInfo.consignee,
+                }
+            ).then(function(res) {
+                console.log(res)
+                var data = res.data;
+                if (data.code === 0) {
+                    alert('订单提交成功');
+                    this.payResult.price = data.content.price;
+                    this.payResult.orderId = data.content.uuid;
+                    this.showOrderInfo = false;
+                    this.showCashier = true;
+                } else if (data.code === -6) { //未登录
+                    alert('您还没有登录');
+                    this.showLogin = true;
+                    this.showMask = true;
+                } else {
+                    alert(data.message);
+                }
+            }, function(res) {
+
+            });
+        },
+        checkNum: function(item) {
+            if (Number.isInteger(item.num)) {  //整数判断
+                
+            } else {
+                alert('错误类型');
+                item.num = 0;
+            }
+        },
+        toOrderInfo: function() {
+            if (this.cartList.length === 0) {
+                alert('购物车为空');
+            } else {
+                // 检查是否登录
+                this.$http.get('api/user/issignin').then(function(res) {
+                    console.log(res);
+                    if (res.data.code === 0) {
+                        this.showCart = false;
+                        this.showOrderInfo = true;
+                    } else {
+                        alert('您还没有登录');
+                        this.showLogin=true;
+                        this.showMask=true;
+                    }
+                }, function(res) {
+                    console.log(res);
+                });
+            }
+        },
+        toCart: function() {
+            this.showCart = true;
+            this.showOrderInfo = false;
+        },
+        getUserkey: function() {
+            return this.getCookie().find(function(cookie) { return cookie.key === 'user-key'});
+        },
+        // getCookie: function(key) {
+        //     if (document.cookie.length === 0) {
+        //         return null;
+        //     } else {
+        //         var cookieArr = document.cookie.split('; ');
+        //         for (var i in cookieArr) {
+        //             var k = cookieArr[i].split('=')[0];
+        //             var v = cookieArr[i].split('=')[1];
+        //             if (k === key) {
+        //                 return { key : k, value : v}
+        //             }
+        //         }
+        //         return null;
+        //     }
+        // },
+        // updateServerData: function() {
+        //     var data = [];
+        //     this.cartList.forEach(function(item) {
+        //         data.push({
+        //             id: item.id,
+        //             num: item.num,
+        //         });
+        //     });
+        //     var cookie = this.getCookie('user-key');
+        //     if (cookie) {
+        //         this.$http.post('api/user/cart/' + cookie.value, data).then(function(res) {
+        //             console.log(res)
+        //         }, function(res) {
+        //             console.log(res)
+        //         });
+        //     }
+        // },
+        loginSuccess: function() {
+            this.showLogin = false;
+            this.showMask = false;
+            window.location.reload();
+        }
+    } 
+});
+
+function test() {
+    console.log("change")
+    return false;
+}
+</script>
+</html>

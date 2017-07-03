@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<title>天天书屋</title>
+<link rel="shortcut icon" href="favicon.ico">
+<link rel="stylesheet" href="css/main.css">
+<script src="js/vue.js"></script>
+<script src="js/vue-resource.js"></script>
+<script src="js/gt.js"></script>
+<style>
+body {
+    color: #333;
+    background-color: #f8f9fc;
+}
+
+</style>
+</head>
+<body>
+<div id="app">
+    <login v-on:login-success="loginSuccess"></login>
+</div>
+</body>
+
+<script src="js/main.js"></script>
+<script>
+function $(el) {
+    return Array.from(document.querySelectorAll(el));
+}
+var login = new Vue({
+    el: '#app',
+    data: {
+
+    },
+    methods: {
+        loginSuccess: function() {
+            window.location = window.location.origin + '/demo5';
+        }
+    }
+})
+
+</script>
+</html>

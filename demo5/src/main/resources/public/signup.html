@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>天天书屋</title>
+<link rel="stylesheet" href="css/main.css">
+<script src="js/vue.js"></script>
+<script src="js/vue-resource.js"></script>
+
+<style>
+#signup {
+    padding: 10px 40px 30px;
+    margin-top: 200px;
+    width: 400px;
+    height: auto;
+    border: 1px solid #DDD;
+}
+input,select {
+    background-color: #fff;
+    border-radius: 4px;
+    border: 1px solid #DDD;
+    box-sizing: border-box;
+    height: 32px;
+    /*line-height: 32px;*/
+    outline: 0;
+    padding: 0 10px;
+}
+input {
+    width: 200px;
+    margin-top: 20px;
+}
+</style>
+</head>
+<body>
+<div id="signup" class="center">
+    <div style="font-size: 20px;height: 50px;line-height:50px" class="text-center">注册</div>
+    <div class="text-center">
+        <input id="email" class="untouch" type="text" disabled/>
+    </div>
+    <div class="text-center">
+        <input type="password" v-model="form.password" maxlength="20" placeholder="密码"/>
+    </div>
+    <div class="text-center">
+        <input type="text" v-model="form.name" placeholder="姓名"/>
+    </div>
+    <div class="text-center">
+        <input @click="signup" class="touch" type="button" value="提交"/>
+        <div  style="height: 18px"><small style="color: red">{{errorMsg}}</small></div>
+    </div>
+</div>
+</body>
+
+<script>
+
+var app1 = new Vue({
+    el: '#signup',
+    data: {
+        form: {
+            email: 'leeys.top@gmail.com',
+            password: '',
+            name: '',
+            emailCode: '',
+        },
+        errorMsg: '',
+    },
+    mounted: function() {
+        var queryObj = {};
+        window.location.search.substring(1).split("&").forEach(function(e) {
+            var k = e.split('=')[0];
+            var v = e.split('=')[1];
+            queryObj[k] = v;
+        });
+        console.log(queryObj);
+        this.form.email = queryObj.email;
+        this.form.emailCode = queryObj.code;
+        document.querySelector('#email').value = queryObj.email;
+    },
+    methods: {
+        signup: function() {
+            if (!this.form.password) {
+                this.errorMsg = '密码不能为空';
+            } else if (!this.form.name) {
+                this.errorMsg = '姓名不能为空';
+            } else {
+                this.errorMsg = '';
+                console.log(this.form);
+                this.$http.post('api/user/signup', this.form
+                ).then(function(res) {
+                    console.log(res)
+                    if (res.data.code === 0) {
+                        alert('注册成功');
+                        window.location = window.location.origin + '/demo5';
+                    } else {
+                        alert(res.data.message);
+                    }
+                }, function(res) {
+
+                })
+            }
+        }
+    }
+})
+</script>
+</html>

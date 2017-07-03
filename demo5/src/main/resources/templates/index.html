@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="UTF-8">
+<title>天天书屋</title>
+<link rel="shortcut icon" href="favicon.ico">
+<script src="js/vue.js"></script>
+<script src="js/vue-resource.js"></script>
+<script src="js/gt.js"></script>
+<script src="js/main.js"></script>
+<link rel="stylesheet" href="css/swiper.min.css">
+<script src="js/swiper.min.js"></script>
+<link rel="stylesheet" href="css/main.css">
+<style>
+body {
+
+}
+
+#header .signout {
+    position:absolute;
+    border: 1px solid #EEE;
+    border-top: none;
+    margin-top: -1px;
+    width: 60px;
+    height: 30px;
+    left: 50%;
+    margin-left: -30px;
+    background-color: #FFF;
+    line-height: 30px;
+    text-align: center;
+    box-shadow: 0 2px 4px rgba(0,0,0,.18),0 0 6px rgba(0,0,0,.09);
+}
+#header .cart {
+    position:absolute;
+    right: -1px;
+    border: 1px solid #EEE;
+    border-top: none;
+    margin-top: -2px;
+    width: 360px;
+    height: 300px;
+    background-color: #FFF;
+    line-height: 30px;
+    box-sizing: border-box;
+    box-shadow: 
+        0 3px 4px rgba(0,0,0,.12),
+        0 3px 6px rgba(0,0,0,.04);
+}
+#header .cart ul {
+
+    padding-left: 30px;
+    height: 260px;
+    overflow-x: hidden;
+}
+#header .cart .name {
+    width: 200px;
+    vertical-align: bottom; /*overflow: hidden;导致的上移*/
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    overflow: hidden;
+}
+#header .cart .item {
+    height: 40px;
+    line-height: 40px;
+}
+#header .cart .item>div {
+    display: inline-block;
+}
+#header .cart .tocart {
+    position: absolute;
+    right: 0;
+    bottom: 5px;
+}
+#cart:hover {
+    border-left: 1px solid #14B177;
+    border-right: 1px solid #14B177;
+}
+
+/*推荐*/
+.rm-card {
+    margin-right: 12px;
+    padding: 10px 10px;
+    display: inline-block;
+    width: 160px;
+    height: 220px;
+    border: 1px solid #EEE;
+}
+.rm-card:last-child {
+    margin-right: 0;
+}
+.rm-card-title {
+    height: 30px;
+}
+.rm-card-line {
+    margin: 5px 0 15px;
+    height: 5px;
+}
+.rm-card-body {
+    height: 160px;
+    overflow: hidden;
+}
+.rm-card-body img {
+    height: 100%;
+    /*width: 100%;*/
+}
+
+.promotion {
+    margin-top: 50px;
+}
+.promotion div {
+    display: inline-block;
+}
+
+</style>
+</head>
+<body>
+<div id="app">
+    
+    <!-- header -->
+    <div id="header">
+        <div style="width: 1200px;line-height:60px;" class="center menu-item">
+            <!-- <div class="menu" id="logo">天天书屋</div> -->
+            <div class="menu" id="logo"><img style="margin-top:5px;" src="images/logo.png" alt=""></div>
+            <div  class="search-wrap center clearfix menu" :class="{active : active}" style="margin: 0 200px;">
+                <div class="search-bar">
+                    <input @keyup.enter="toSearchResult(search.keyword)" @blur="searchBarBlur" @focus="searchAjax" @keyup="checkSearch" v-model="search.keyword" class="search-input" type="text" placeholder="搜索">
+                    <div @click="toSearchResult(search.keyword)" class="icon-search"></div>
+                </div>
+                <div v-cloak class="result-wrap" :class="{hide : !showResult}">
+                    <ul class="result">
+                        <li v-for="result in search.resultList"><a :href="'book/' + result.id">{{result.name}}</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div style="float:right">
+            <div class="menu" @mouseenter="toggleShowSignout" @mouseleave="toggleShowSignout">
+                <div id="username" >
+                    <a style="padding: 5px 20px;" th:if="${session.user == null}" href="signin">登录 / 注册</a>
+                    <a style="padding: 5px 20px;"th:if="${session.user != null}" href="" th:text="${session.user.username}">阿狗</a>
+                </div>
+                <transition name="fade">
+                    <div v-show="showSignout" class="signout"  v-cloak>
+                        <a href="signout">退出</a>
+                    </div>
+                </transition>
+            </div>
+            <div class="menu"><a href="">我的订单</a></div>
+            <div class="menu" id="cart" @mouseenter="showCart = true;getCart();" @mouseleave="showCart = false">
+                <a href="cart.html">购物车</a>
+                <transition name="fade">
+                <div v-show="showCart" class="cart"  v-cloak>
+                    <div v-if="cartList.length === 0" class="text-center" style="margin-top: 50px;">
+                        <div><img src="images/cart_empty.png" alt="图片无法显示"></div>
+                        <div>空空如也</div>
+                    </div>
+                    <ul>
+                        <li v-for="item in cartList" class="item">
+                            <div  class="name"><a :href="'book/' + item.id" target="_blank">{{item.name}}</a></div>
+                            <div>{{getPrice(item.price, item.discount)}}元 X {{item.num}}</div>
+                        </li>
+                    </ul>
+                    <div class="tocart"><a style="padding: 5px 20px;" href="cart.html">去购物车结算</a></div>
+                </div>
+                </transition>
+            </div>
+            <div class="menu"><a href="admin.html" style="">后台管理</a></div>
+            <div class="menu"><a target="_blank" href="https://github.com/Dog-Lee/demos" style="">Github</a></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="body center">
+        
+        <div class="category-wrap">
+            <div class="category">
+                <div class="header text-center">图书分类</div>
+                <div class="item">
+                    <dt>文学馆</dt>
+                    <dd>
+                        <a href="">小说</a>
+                        <a href="">文学</a>
+                        <a href="">传记</a>
+                        <a href="">青春</a>
+                    </dd>
+                    <!-- <div class="sub-item">
+
+                    </div> -->
+                </div>
+                <div class="item">
+                    <dt>童书馆</dt>
+                    <dd>
+                        <a href="">科普百科</a>
+                        <a href="">儿童文学</a>
+                        <a href="">幼儿启蒙</a>
+                    </dd>
+                </div>
+                <div class="item">
+                    <dt>教育馆</dt>
+                    <dd>
+                        <a href="">教辅</a>
+                        <a href="">外语</a>
+                        <a href="">考试</a>
+                        <a href="">教材</a>
+                    </dd>
+                </div>
+                <div class="item">
+                    <dt>人文社会馆</dt>
+                    <dd>
+                        <a href="">历史</a>
+                        <a href="">心理学</a>
+                        <a href="">政治</a>
+                        <a href="">军事文化</a>
+                    </dd>
+                </div>
+                <div class="item">
+                    <dt>经管馆</dt>
+                    <dd>
+                        <a href="">管理</a>
+                        <a href="">经济</a>
+                        <a href="">投资</a>
+                        <a href="">营销</a>
+                    </dd>
+                </div>
+                <div class="item">
+                    <dt>生活馆</dt>
+                    <dd>
+                        <a href="">育儿家教</a>
+                        <a href="">孕产</a>
+                        <a href="">健身保健</a>
+                        <a href="">旅游地图</a>
+                    </dd>
+                </div>
+                <div class="item">
+                    <dt>计算机馆</dt>
+                    <dd>
+                        <a href="">编程语言</a>
+                        <a href="">人工智能</a>
+                        <a href="">移动开发</a>
+                    </dd>
+                </div>
+                <div class="item">
+                    <dt>电子书</dt>
+                    <dd>
+                        <a href="">编程语言</a>
+                        <a href="">人工智能</a>
+                        <a href="">移动开发</a>
+                    </dd>
+                </div>
+            </div>
+        </div>
+
+        <div class="body-center">
+            <div class="swiper-container">
+                <div class="swiper-wrapper">
+                    <div class="swiper-slide"><img src="images/test1.jpg" alt=""></div>
+                    <div class="swiper-slide"><img src="images/test2.jpg" alt=""></div>
+                    <div class="swiper-slide"><img src="images/test3.jpg" alt=""></div>
+                    <div class="swiper-slide"><img src="images/test4.jpg" alt=""></div>
+                </div>
+                <div class="swiper-button-prev"></div>
+                <div class="swiper-button-next"></div>
+                <div class="swiper-pagination"></div>
+            </div>
+            <div>
+                <div style="height: 30px;margin-top: 30px;">
+                    <div class="text-center tips">阿狗推荐</div>
+                    <hr style="margin-top: -1px; background-color: #14B177;">
+                    <div style="margin-top: 30px;">
+                        <div class="rm-card">
+                            <div class="rm-card-title">Book One</div>
+                            <div class="rm-card-line" style="background: #82D8E3"></div>
+                            <!-- <div class="rm-card-body text-center"><img src="https://img3.doubanio.com//mpic//s28340131.jpg" alt=""></div> -->
+                        </div>
+                        <div class="rm-card">
+                            <div class="rm-card-title">Book Two</div>
+                            <div class="rm-card-line" style="background: #ADE422"></div>
+                            <!-- <div class="rm-card-body text-center"><img src="https://img3.doubanio.com/mpic/s28340131.jpg" alt=""></div> -->
+                        </div>
+                        <div class="rm-card">
+                            <div class="rm-card-title">Book Three</div>
+                            <div class="rm-card-line" style="background: #FFA724"></div>
+                            <!-- <div class="rm-card-body text-center"><img src="https://img3.doubanio.com//mpic//s28340131.jpg" alt=""></div> -->
+                        </div>
+                        <div class="rm-card">
+                            <div class="rm-card-title">Book Four</div>
+                            <div class="rm-card-line" style="background: #FF5252"></div>
+                            <!-- <div class="rm-card-body text-center"><img src="https://img1.doubanio.com/lpic/s28394307.jpg" alt=""></div> -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+ 
+
+        <div class="hot clearfix">
+            <div class="hot-book">
+                <div class="header  text-center">畅销图书</div>
+                <div class="item" th:each="book : ${hotBookList}">
+                    <a target="_blank" th:text="${book.name}" th:href="|book/${book.id}|"></a>
+                </div>
+            </div>
+        </div>
+
+        <div style="clear: both"></div>
+
+        <div class="promotion">
+            <div><img src="images/promotion1.jpg" alt=""></div>
+            <div><img src="images/promotion2.jpg" alt=""></div>
+            <div><img src="images/promotion3.jpg" alt=""></div>
+        </div>
+
+        <div style="height: 30px;margin-top: 30px;">
+            <div class="text-center tips" style="border: 1px solid #FF7F7F;border-bottom: none;color:#FF7F7F">新书通报</div>
+            <hr style="margin-top: -1px; background-color: #FF7F7F;">
+        </div>
+        <div class="new-book">
+            <div class="item" th:each="book : ${newBookList}">
+                <a th:href="|book/${book.id}|" target="_blank">
+	                <div class="image-wrap text-center"><img th:src="${book.imgUrl} ?: 'images/no_image.png'" alt="暂无图片"></div>
+	                <p th:text="${book.name}" th:title="${book.name}">你看起来很美味</p>
+                </a>
+            </div>
+        </div>
+        
+        <div style="height: 30px;margin-top: 30px;">
+            <div class="text-center tips" style="border: 1px solid #82D8E3;border-bottom: none;color:#82D8E3">猜你喜欢</div>
+            <hr style="margin-top: -1px; background-color: #82D8E3;">
+        </div>
+        <div class="new-book ">
+            <div class="item" th:each="book : ${randomBookList}">
+                <a th:href="|book/${book.id}|" target="_blank">
+                    <div class="image-wrap text-center"><img th:src="${book.imgUrl}" alt="暂无图片"></div>
+                    <p th:text="${book.name}" th:title="${book.name}">你看起来很美味</p>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div style="clear: both"></div>
+    
+
+    <!-- footer -->
+    <div id="footer">
+        <div class="inner">
+            <p>Copyright © 2017 阿狗的天天书屋, All Rights Reserved.</p>
+        </div>
+    </div>
+</div>
+</body>
+
+<script>
+
+
+
+
+
+
+/* 搜索组件 */
+Vue.component('search', {
+    template: `
+    <div>adf</div>
+    `,
+    data: function() {
+        return {
+
+        }
+    },
+    methods: {
+
+    }
+})
+
+var app = new Vue({
+    el: '#app',
+    data: {
+        showSignout: false,
+        showCart: false,
+        active: false,
+        showResult: false,
+        cartList: [],
+        search: {
+            keyword: '',
+            keywordLength: 0,  //防止使用中文输入法空格导致的多余搜索
+            resultList: [],
+        }
+    },
+    watch: {
+    },
+    mounted: function() {
+        var swiper = new Swiper('.swiper-container', {
+            pagination: '.swiper-pagination',
+            prevButton:'.swiper-button-prev',
+            nextButton:'.swiper-button-next',
+            slidesPerView: 'auto',
+            paginationClickable: true,
+            spaceBetween: 1,
+            // autoplay: 5000,
+            autoplayDisableOnInteraction: false,//用户操作也不会停止自动滑动
+            loop: true,
+        });
+        this.getCart();
+
+    },
+    methods: {
+        checkSearch: function () {
+            var trimLength = this.search.keyword.trim().length;
+            if (trimLength === 0) {
+                this.search.resultList = [];
+                this.showResult = false;
+            } else if (trimLength != this.search.keywordLength) {
+                console.log(this.search.keyword);
+                this.searchAjax();
+            }
+            this.search.keywordLength = trimLength;
+            
+        },
+        searchAjax: function() {
+            this.active = true;
+            if (this.search.keyword.trim().length === 0)
+                return;
+            this.$http.get('api/book/search/name?keyword=' + this.search.keyword + '&prefix=1').then(function(res) {
+                console.log(res);
+                this.search.resultList = res.data.content;
+                this.showResult = true;
+            }, function(res) {
+                console.log(res);
+            })
+        },
+        toSearchResult: function(result) {
+            console.log(result)
+            window.open(window.location + 'search?keyword=' + result);
+        },
+        searchBarBlur: function() {
+            this.active = false;
+            var self = this;
+            setTimeout(function() {
+                // self.search.resultList.length = 0;
+                self.showResult = false;
+            }, 200);
+            // this.search.resultList.length = 0;
+        },
+        test: function() {
+            console.log("touch")
+        },
+        toggleShowSignout: function(e) {
+            // console.log(e)
+            if (document.querySelector('#username').innerText === '登录 / 注册') {
+                return;
+            }
+            this.showSignout = !this.showSignout;
+        },
+        getCart: function() {
+            this.$http.get('api/user/cart').then(function(res) {
+                this.cartList = res.data.content;
+                console.log(res)
+            }, function(res) {
+                console.log(res)
+            });
+        },
+        getPrice: function(price, discount) {
+            var v = price * discount / 10;
+            return v.toFixed(2);
+        },
+    }
+});
+
+
+
+
+</script>
+</html>
