@@ -20,17 +20,10 @@ public class Redis {
 	private static JedisPool jedisPool;
 	
 	static {
-		 /**
-		  * jedis连接的timeout为 2000秒（33分钟）, 具体是指？
-		  * 原理是：
-		  * 清除线程每30秒运行一次，标记出池中空闲时间超过10分钟的连接，此时并不会立即清除连接，
-		  * 当清除线程再次标记时，发现连接已经被标记过，并且距上次标记的时间超过60秒，则会清除该空闲连接，每次清除3条连接（默认）
-		  * by leeys.top@gmail.com
-		  */
 		 jedisPoolConfig = new JedisPoolConfig();
-		 jedisPoolConfig.setMaxTotal(8);  //默认是8  最大连接数
-		 jedisPoolConfig.setMaxIdle(8);   //默认是8  最大空闲连接数
-		 jedisPoolConfig.setMinIdle(3);   //池中最小空闲连接数
+		 jedisPoolConfig.setMaxTotal(3);  //默认是8  最大连接数
+		 jedisPoolConfig.setMaxIdle(3);   //默认是8  最大空闲连接数
+		 jedisPoolConfig.setMinIdle(1);   //池中最小空闲连接数
 		 jedisPoolConfig.setFairness(true);  //公平队列
 		 jedisPoolConfig.setTestWhileIdle(true);  //开启清除空闲连接
 		 jedisPoolConfig.setMaxWaitMillis(1000 * 60 * 30); //池中连接最大空闲时间为30分钟
